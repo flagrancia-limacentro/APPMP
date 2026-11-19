@@ -1,0 +1,744 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Informe de Turno Fiscal — Ministerio Público</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+
+  <!-- ================= PANTALLA 1: PORTADA / ACCESO INSTITUCIONAL ================= -->
+  <section id="loginScreen" class="login-screen">
+    <div class="login-left">
+      <div>
+        <div class="login-brand">
+          <div class="login-logo-wrap">
+            <img src="assets/logo-mp.jpg" alt="Escudo del Ministerio Público" />
+          </div>
+          <div class="login-brand-text">
+            <h1>MINISTERIO PÚBLICO</h1>
+            <p>REPÚBLICA DEL PERÚ</p>
+          </div>
+        </div>
+
+        <div class="login-title">
+          <h2>Bienvenido</h2>
+          <p>Ingrese sus credenciales para continuar</p>
+        </div>
+
+        <form id="loginForm" class="login-form">
+          <div id="loginError" class="login-error hidden"></div>
+
+          <div class="login-input-group" title="Usuario institucional">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>
+            </svg>
+            <input type="text" id="loginUser" placeholder="Usuario (ej. 1fppfd.limacentro)" autocomplete="off" required />
+          </div>
+
+          <div class="login-input-group" title="Contraseña">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+            </svg>
+            <input type="password" id="loginPassword" placeholder="Contraseña" autocomplete="off" required />
+            <button type="button" id="btnTogglePwd" style="border:none;background:none;cursor:pointer;color:#475569;padding:0 4px;" title="Mostrar u ocultar contraseña">👁</button>
+          </div>
+
+          <button type="submit" class="login-btn-primary">Iniciar sesión</button>
+        </form>
+
+        <div class="login-platform-meta">
+          Plataforma: <strong>PRODUCCIÓN SEGURA</strong> (Lima Centro)<br />
+          <span id="draftStatusLogin">Modelo Oficial — Oficio Circular N° 000137-2026-MP-FN-PJFSLIMA</span>
+        </div>
+      </div>
+
+      <div class="login-values">
+        <h3>Valores Institucionales</h3>
+        <div class="values-grid">
+          <div class="value-item">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+              <path d="M3 21h18M4 10h16M6 10v8M10 10v8M14 10v8M18 10v8M12 3l9 5H3l9-5z"/>
+            </svg>
+            <span>Justicia</span>
+          </div>
+          <div class="value-item">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+              <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/>
+            </svg>
+            <span>Vocación de Servicio</span>
+          </div>
+          <div class="value-item">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+              <path d="M16 11l2 2 4-4M2 12l4-4 5 5 5-5 4 4"/>
+            </svg>
+            <span>Respeto</span>
+          </div>
+          <div class="value-item">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+              <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>
+            </svg>
+            <span>Transparencia</span>
+          </div>
+          <div class="value-item">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+              <circle cx="12" cy="7" r="3"/><circle cx="6" cy="11" r="2.5"/><circle cx="18" cy="11" r="2.5"/>
+              <path d="M8 20v-2a4 4 0 0 1 8 0v2"/>
+            </svg>
+            <span>Solidaridad</span>
+          </div>
+        </div>
+        <p class="login-quote">
+          "Trabajamos por una justicia <span>transparente, moderna y efectiva</span> para alcanzar una sociedad pacífica con inclusión social e igualdad de oportunidades."
+        </p>
+      </div>
+    </div>
+
+    <div class="login-right">
+      <div class="login-right-bg"></div>
+      <div class="login-right-overlay"></div>
+      <div class="login-right-content">
+        <span class="login-badge">Distrito Fiscal de Lima Centro · Sede Flagrancia</span>
+        <h2>Sistema de Redacción de Informe de Turno Fiscal</h2>
+        <p>
+          Complete de forma guiada los datos del turno, estadísticas, detalle de casos, audiencias, incidencias y anexos conforme al modelo oficial, con vista previa A4 en tiempo real y exportación directa a Word (.docx) y PDF.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= PANTALLA 2: CARGA DE INICIO ================= -->
+  <div id="securityLoader" class="security-loader hidden">
+    <div class="security-box">
+      <div class="security-ring">
+        <div class="security-ring-inner">
+          <img src="assets/logo-mp.jpg" alt="MP" />
+        </div>
+      </div>
+      <div class="security-code">[SYS_INIT] CARGANDO PLANTILLA OFICIAL...</div>
+      <h3>FISCALÍA DE LA NACIÓN</h3>
+      <div class="security-sub">REPÚBLICA DEL PERÚ</div>
+      <div class="security-bar">
+        <div id="securityBarFill" class="security-bar-fill"></div>
+      </div>
+      <div id="securityStatus" class="security-status">Iniciando módulo de Informe de Turno Fiscal...</div>
+    </div>
+  </div>
+
+  <!-- ================= PANTALLA 3: APLICACIÓN PRINCIPAL ================= -->
+  <div id="appShell" class="app-shell hidden">
+    <header class="topbar">
+      <div class="topbar-left">
+        <img src="assets/logo-mp.jpg" alt="Logo MP" class="topbar-logo" />
+        <div class="topbar-title">
+          <h1>Informe de Turno Fiscal — Lima Centro</h1>
+          <span id="topbarSubtitle">Modelo Oficial · Oficio Circular N° 000137-2026-MP-FN-PJFSLIMA</span>
+        </div>
+      </div>
+
+      <div class="topbar-actions">
+        <span id="saveIndicator" class="save-badge">Guardado automático</span>
+        <button type="button" id="btnBackToAdmin" class="btn btn-gold hidden">Panel Coordinación</button>
+        <button type="button" id="btnSendToCoord" class="btn btn-primary">Enviar a Coordinación</button>
+        <button type="button" id="btnTogglePreview" class="btn btn-ghost">Ocultar Vista Previa</button>
+        <button type="button" id="btnFillExample" class="btn btn-ghost">Cargar Ejemplo</button>
+        <button type="button" id="btnImportJson" class="btn btn-ghost">Importar JSON</button>
+        <button type="button" id="btnExportJson" class="btn btn-ghost">Respaldar JSON</button>
+        <button type="button" id="btnResetForm" class="btn btn-ghost">Limpiar</button>
+        <button type="button" id="btnPrintPdf" class="btn btn-ghost">Imprimir / PDF</button>
+        <button type="button" id="btnDownloadDocx" class="btn btn-gold">Descargar Word (.docx)</button>
+        <button type="button" id="btnBackToLogin" class="btn btn-ghost" title="Cerrar sesión">Salir</button>
+      </div>
+    </header>
+
+    <input type="file" id="jsonFileInput" accept=".json" class="hidden" />
+
+    <!-- PANEL ADMINISTRACIÓN (COORDINACIÓN) -->
+    <section id="adminPanel" class="admin-shell hidden">
+      <div class="section-header" style="margin-bottom:16px;">
+        <div>
+          <h2>Panel de Administración — Coordinación Distrital de Flagrancia Delictiva de Lima Centro</h2>
+          <p>Supervisión de las 9 Fiscalías Provinciales Penales de Flagrancia Delictiva e informes remitidos.</p>
+        </div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;">
+          <button type="button" id="btnAdminExportCsv" class="btn btn-gold">Exportar Consolidado (.csv)</button>
+          <button type="button" id="btnAdminImportJson" class="btn btn-outline">Importar Informe (.json)</button>
+          <button type="button" id="btnAdminOpenEditor" class="btn btn-primary">Ir al Redactor de Informe</button>
+        </div>
+      </div>
+
+      <div class="admin-stats-grid" id="adminStatsGrid"></div>
+
+      <div class="admin-card">
+        <div class="sub-block-header">
+          <h3>Estado de las 9 Fiscalías de Flagrancia Delictiva de Lima Centro</h3>
+        </div>
+        <div class="dyn-table-wrap">
+          <table class="dyn-table">
+            <thead>
+              <tr>
+                <th>N°</th>
+                <th>Fiscalía</th>
+                <th>Usuario</th>
+                <th>Estado</th>
+                <th>Último Informe</th>
+                <th>Casos / Detenidos</th>
+                <th>Acciones</th>
+              </tr>
+            </thead>
+            <tbody id="tbodyAdminFiscalias"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="admin-card">
+        <div class="sub-block-header">
+          <h3>Informes Remitidos a Coordinación</h3>
+          <input type="text" id="adminSearchInput" placeholder="Buscar por fiscalía, N° informe o fecha..." style="padding:6px 10px;border:1px solid #cbd5e1;border-radius:7px;font-size:12.5px;min-width:260px;" />
+        </div>
+        <div class="dyn-table-wrap">
+          <table class="dyn-table">
+            <thead>
+              <tr>
+                <th>Fecha envío</th>
+                <th>Fiscalía</th>
+                <th>Informe N°</th>
+                <th>Turno</th>
+                <th>Casos / Detenidos</th>
+                <th>Acciones</th>
+              </tr>
+            </thead>
+            <tbody id="tbodyAdminSubmissions"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <main id="workspace" class="workspace preview-open">
+      <!-- Navegación lateral de secciones -->
+      <aside class="sidebar">
+        <div class="sidebar-section-label">Secciones del Informe</div>
+        <div style="margin:0 8px 12px;">
+          <div style="display:flex;justify-content:space-between;font-size:11px;color:#475569;margin-bottom:4px;">
+            <span>Avance del informe</span>
+            <strong id="progressText">0%</strong>
+          </div>
+          <div style="height:6px;background:#e2e8f0;border-radius:99px;overflow:hidden;">
+            <div id="progressBarFill" style="height:100%;width:0%;background:#163a6b;transition:width 0.25s;"></div>
+          </div>
+        </div>
+        <nav class="step-nav" id="stepNav">
+          <button type="button" class="step-btn active" data-step="0"><span class="step-num">0</span>Encabezado y Oficio</button>
+          <button type="button" class="step-btn" data-step="1"><span class="step-num">1</span>Antecedentes</button>
+          <button type="button" class="step-btn" data-step="2"><span class="step-num">2</span>Datos Generales y Personal</button>
+          <button type="button" class="step-btn" data-step="3"><span class="step-num">3</span>Resumen Estadístico</button>
+          <button type="button" class="step-btn" data-step="4"><span class="step-num">4</span>Detalle de Casos</button>
+          <button type="button" class="step-btn" data-step="5"><span class="step-num">5</span>Derivados y Detenciones</button>
+          <button type="button" class="step-btn" data-step="6"><span class="step-num">6</span>Incidencias</button>
+          <button type="button" class="step-btn" data-step="7"><span class="step-num">7</span>Conclusiones, Firma y Anexos</button>
+        </nav>
+
+        <div class="sidebar-sede-card">
+          <img src="assets/sede-flagrancia.jpg" alt="Sede Flagrancia Lima Centro" />
+          <div>
+            <strong>Unidad de Flagrancia</strong><br />
+            Distrito Fiscal de Lima Centro
+          </div>
+        </div>
+      </aside>
+
+      <!-- Panel de Formulario -->
+      <section class="form-panel" id="formPanel">
+        <!-- STEP 0: Encabezado -->
+        <div class="step-pane" data-step="0">
+          <div class="section-header">
+            <div>
+              <h2>Encabezado, Destinatario y Asunto</h2>
+              <p>Datos iniciales del Informe N° y referencia del turno fiscal.</p>
+            </div>
+          </div>
+
+          <div class="form-grid">
+            <div class="field">
+              <label>Fecha del informe (Lima, ...)</label>
+              <input type="text" data-bind="fecha_informe" placeholder="Ej. 18 de noviembre de 2026" />
+            </div>
+            <div class="field">
+              <label>N° de Informe <span style="color:#b91c1c;">*</span></label>
+              <input type="text" data-bind="numero_informe" placeholder="Ej. 0045" />
+            </div>
+            <div class="field">
+              <label>Año</label>
+              <input type="text" data-bind="anio" placeholder="2026" />
+            </div>
+            <div class="field">
+              <label>Siglas del Despacho</label>
+              <input type="text" data-bind="siglas_despacho" placeholder="Ej. 5FPPFD-LIMACENTRO" />
+            </div>
+            <div class="field col-span-2">
+              <label>Nombre del Despacho Emisor (para cuerpo del informe y firma)</label>
+              <input type="text" data-bind="nombre_despacho_emisor" placeholder="Ej. 5.ª Fiscalía Provincial Penal de Flagrancia Delictiva de Lima Centro" />
+            </div>
+            <div class="field">
+              <label>Destinataria</label>
+              <input type="text" data-bind="destinataria_nombre" />
+            </div>
+            <div class="field">
+              <label>Cargo de Destinataria</label>
+              <input type="text" data-bind="destinataria_cargo" />
+            </div>
+            <div class="field">
+              <label>Tipo de turno (para Asunto)</label>
+              <input type="text" data-bind="tipo_turno_asunto" placeholder="Ej. DE FLAGRANCIA DELICTIVA" />
+            </div>
+            <div class="field">
+              <label>Referencia</label>
+              <input type="text" data-bind="referencia" />
+            </div>
+            <div class="field">
+              <label>Fecha de inicio del turno <span style="color:#b91c1c;">*</span></label>
+              <input type="text" data-bind="fecha_inicio" placeholder="Ej. 17/11/2026" />
+            </div>
+            <div class="field">
+              <label>Hora de inicio (horas)</label>
+              <input type="text" data-bind="hora_inicio" placeholder="08:00" />
+            </div>
+            <div class="field">
+              <label>Fecha de fin del turno <span style="color:#b91c1c;">*</span></label>
+              <input type="text" data-bind="fecha_fin" placeholder="Ej. 18/11/2026" />
+            </div>
+            <div class="field">
+              <label>Hora de fin (horas)</label>
+              <input type="text" data-bind="hora_fin" placeholder="07:59" />
+            </div>
+          </div>
+        </div>
+
+        <!-- STEP 1: Antecedentes -->
+        <div class="step-pane hidden" data-step="1">
+          <div class="section-header">
+            <div>
+              <h2>1. Antecedentes</h2>
+              <p>Base normativa precargada conforme al modelo oficial de Lima Centro.</p>
+            </div>
+            <button type="button" id="btnRestoreAntecedentes" class="btn btn-outline btn-sm">Restaurar texto oficial</button>
+          </div>
+          <div class="form-grid">
+            <div class="field col-span-2">
+              <label>Párrafo 1 (Oficio Circular)</label>
+              <textarea data-bind="antecedente_1" rows="3"></textarea>
+            </div>
+            <div class="field col-span-2">
+              <label>Párrafo 2 (Rol de turno y Resoluciones PJFS Lima Centro)</label>
+              <textarea data-bind="antecedente_2" rows="5"></textarea>
+            </div>
+            <div class="field col-span-2">
+              <label>Párrafo 3 (Resoluciones de Fiscalía de la Nación N° 3190, 3191 y 3192-2026-MP-FN)</label>
+              <textarea data-bind="antecedente_3" rows="5"></textarea>
+            </div>
+          </div>
+        </div>
+
+        <!-- STEP 2: Datos Generales y Personal -->
+        <div class="step-pane hidden" data-step="2">
+          <div class="section-header">
+            <div>
+              <h2>2. Datos Generales del Turno y Personal</h2>
+              <p>Información del despacho, modalidad, equipo fiscal y personal de apoyo.</p>
+            </div>
+          </div>
+
+          <div class="form-grid">
+            <div class="field col-span-2">
+              <label>Despacho de turno</label>
+              <input type="text" data-bind="nombre_despacho_turno" placeholder="Ej. 5.ª Fiscalía Provincial Penal de Flagrancia Delictiva de Lima Centro" />
+            </div>
+
+            <div class="field col-span-2">
+              <label>Tipo de turno</label>
+              <div class="check-group">
+                <label class="check-pill"><input type="checkbox" data-bind-check="tipo_flagrancia" /> Flagrancia delictiva</label>
+                <label class="check-pill"><input type="checkbox" data-bind-check="tipo_corporativa" /> Fiscalía corporativa penal</label>
+                <label class="check-pill"><input type="checkbox" data-bind-check="tipo_superior" /> Fiscalía superior</label>
+                <label class="check-pill"><input type="checkbox" data-bind-check="tipo_otro_check" /> Otro:</label>
+                <input type="text" data-bind="otro_tipo_turno" placeholder="Especifique otro..." style="flex:1; min-width:160px;" />
+              </div>
+            </div>
+
+            <div class="field col-span-2">
+              <label>Modalidad y duración</label>
+              <div class="check-group">
+                <label class="check-pill"><input type="checkbox" data-bind-check="mod_24h" /> 24 horas</label>
+                <label class="check-pill"><input type="checkbox" data-bind-check="mod_semanal" /> Semanal</label>
+                <label class="check-pill"><input type="checkbox" data-bind-check="mod_otra_check" /> Otra:</label>
+                <input type="text" data-bind="otra_modalidad" placeholder="Especifique otra modalidad..." style="flex:1; min-width:160px;" />
+              </div>
+            </div>
+
+            <div class="field col-span-2">
+              <label>Sede o lugar de atención</label>
+              <input type="text" data-bind="sede_atencion" placeholder="Ej. Unidad de Flagrancia Delictiva de Lima Centro — Jr. ..." />
+            </div>
+
+            <div class="field">
+              <label>Fiscal responsable (Nombre completo) <span style="color:#b91c1c;">*</span></label>
+              <input type="text" data-bind="fiscal_responsable_nombre" placeholder="Ej. Dr. Juan Pérez Gómez" />
+            </div>
+            <div class="field">
+              <label>Cargo del fiscal responsable</label>
+              <input type="text" data-bind="fiscal_responsable_cargo" placeholder="Ej. Fiscal Provincial Penal" />
+            </div>
+
+            <div class="field col-span-2">
+              <label>Fiscales adjuntos provinciales</label>
+              <textarea data-bind="fiscales_adjuntos" placeholder="Nombres y apellidos de los fiscales adjuntos que participaron en el turno"></textarea>
+            </div>
+            <div class="field col-span-2">
+              <label>Asistentes en función fiscal y administrativos</label>
+              <textarea data-bind="asistentes" placeholder="Nombres y apellidos del personal asistente y administrativo"></textarea>
+            </div>
+          </div>
+
+          <div class="sub-block">
+            <div class="sub-block-header">
+              <h3>2.1 Personal de apoyo asignado al turno (pool de fiscales, Presidencia u otros)</h3>
+              <button type="button" class="btn btn-primary btn-sm" data-add-row="personalApoyo">+ Agregar personal</button>
+            </div>
+            <div class="dyn-table-wrap">
+              <table class="dyn-table">
+                <thead>
+                  <tr>
+                    <th>N°</th>
+                    <th>Apellidos y nombres</th>
+                    <th>Cargo</th>
+                    <th>Origen del apoyo</th>
+                    <th>Horario de apoyo</th>
+                    <th>Observaciones</th>
+                    <th></th>
+                  </tr>
+                </thead>
+                <tbody id="tbodyPersonalApoyo"></tbody>
+              </table>
+            </div>
+
+            <div class="field" style="margin-top: 12px;">
+              <label>Observaciones sobre la disponibilidad del personal (licencias, descansos, apoyos parciales)</label>
+              <input type="text" data-bind="observaciones_personal" placeholder="Ej. Sin novedades / Licencia del..." />
+            </div>
+          </div>
+        </div>
+
+        <!-- STEP 3: Resumen Estadístico -->
+        <div class="step-pane hidden" data-step="3">
+          <div class="section-header">
+            <div>
+              <h2>3. Resumen Estadístico del Turno y Resultados</h2>
+              <p>Indicadores cuantitativos del turno y resultados procesales obtenidos.</p>
+            </div>
+            <button type="button" id="btnAutoStats" class="btn btn-outline btn-sm">Calcular desde Sección 4</button>
+          </div>
+
+          <div class="form-grid">
+            <div class="field"><label>Total de casos fiscales recibidos</label><input type="number" min="0" data-bind="total_casos" /></div>
+            <div class="field"><label>Casos con detenido</label><input type="number" min="0" data-bind="casos_con_detenido" /></div>
+            <div class="field"><label>Casos sin detenido</label><input type="number" min="0" data-bind="casos_sin_detenido" /></div>
+            <div class="field"><label>Total de detenidos</label><input type="number" min="0" data-bind="total_detenidos" /></div>
+            <div class="field"><label>Levantamientos de cadáver</label><input type="number" min="0" data-bind="levantamientos_cadaver" /></div>
+            <div class="field"><label>Casos recibidos de turnos anteriores</label><input type="number" min="0" data-bind="casos_turnos_anteriores" /></div>
+            <div class="field"><label>Detenidos con situación jurídica resuelta dentro del plazo</label><input type="number" min="0" data-bind="detenidos_resueltos" /></div>
+            <div class="field"><label>Detenidos con situación jurídica pendiente</label><input type="number" min="0" data-bind="detenidos_pendientes" /></div>
+          </div>
+
+          <div class="sub-block">
+            <div class="sub-block-header">
+              <h3>3.1 Resultados obtenidos</h3>
+            </div>
+            <div class="form-grid">
+              <div class="field"><label>Principio de oportunidad</label><input type="number" min="0" data-bind="res_principio_oportunidad" /></div>
+              <div class="field"><label>Acuerdo reparatorio</label><input type="number" min="0" data-bind="res_acuerdo_reparatorio" /></div>
+              <div class="field"><label>Incoación de proceso inmediato (procedente / improcedente)</label><input type="text" data-bind="res_proceso_inmediato" placeholder="Ej. 2 (2 proc. / 0 improc.)" /></div>
+              <div class="field"><label>Terminación anticipada</label><input type="number" min="0" data-bind="res_terminacion_anticipada" /></div>
+              <div class="field"><label>Acusación directa o requerimiento acusatorio</label><input type="number" min="0" data-bind="res_acusacion" /></div>
+              <div class="field"><label>Formalización de la investigación preparatoria</label><input type="number" min="0" data-bind="res_formalizacion" /></div>
+              <div class="field"><label>Prisión preventiva solicitada u otra medida de coerción</label><input type="number" min="0" data-bind="res_medidas_coercion" /></div>
+              <div class="field"><label>Ampliación de investigación preliminar o de diligencias</label><input type="number" min="0" data-bind="res_ampliacion" /></div>
+              <div class="field"><label>Archivo, libertad por atipicidad u otra disposición de conclusión</label><input type="number" min="0" data-bind="res_archivo" /></div>
+              <div class="field"><label>Derivación a otro despacho</label><input type="number" min="0" data-bind="res_derivacion" /></div>
+              <div class="field"><label>Otros resultados (detalle)</label><input type="text" data-bind="res_otros_detalle" placeholder="Especifique otros resultados..." /></div>
+              <div class="field"><label>Otros resultados (cantidad)</label><input type="number" min="0" data-bind="res_otros" /></div>
+              <div class="field col-span-2">
+                <label>Delitos de mayor incidencia durante el turno</label>
+                <input type="text" data-bind="delitos_mayor_incidencia" placeholder="Ej. Conducción en estado de ebriedad, hurto agravado, violencia familiar..." />
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- STEP 4: Detalle de Casos -->
+        <div class="step-pane hidden" data-step="4">
+          <div class="section-header">
+            <div>
+              <h2>4. Detalle de Casos</h2>
+              <p>Registre los casos ingresados, recibidos de turnos anteriores, audiencias y levantamientos.</p>
+            </div>
+          </div>
+
+          <!-- 4.1 -->
+          <div class="sub-block" style="margin-top:0; padding-top:0; border-top:none;">
+            <div class="sub-block-header">
+              <h3>4.1 Casos ingresados durante el turno</h3>
+              <div style="display:flex;gap:6px;">
+                <button type="button" class="btn btn-outline btn-sm" id="btnImportCasosCsv" title="Importar desde CSV (columnas: Carpeta, Detenidos, Agraviado, Delito, Diligencias, Resultado)">Importar CSV</button>
+                <button type="button" class="btn btn-primary btn-sm" data-add-row="casosIngresados">+ Agregar caso</button>
+              </div>
+            </div>
+            <input type="file" id="csvCasosInput" accept=".csv,.txt" class="hidden" />
+            <div class="dyn-table-wrap">
+              <table class="dyn-table">
+                <thead>
+                  <tr>
+                    <th>N°</th>
+                    <th>Carpeta fiscal o N° de caso</th>
+                    <th>Detenido(s)</th>
+                    <th>Agraviado</th>
+                    <th>Delito</th>
+                    <th>Diligencias realizadas</th>
+                    <th>Resultado y estado actual</th>
+                    <th></th>
+                  </tr>
+                </thead>
+                <tbody id="tbodyCasosIngresados"></tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- 4.2 -->
+          <div class="sub-block">
+            <div class="sub-block-header">
+              <h3>4.2 Casos recibidos de turnos anteriores</h3>
+              <button type="button" class="btn btn-primary btn-sm" data-add-row="casosAnteriores">+ Agregar caso</button>
+            </div>
+            <div class="dyn-table-wrap">
+              <table class="dyn-table">
+                <thead>
+                  <tr>
+                    <th>N°</th>
+                    <th>Carpeta fiscal</th>
+                    <th>Despacho y turno de origen</th>
+                    <th>Detenidos</th>
+                    <th>Estado en que se recibe</th>
+                    <th>Actuación realizada</th>
+                    <th></th>
+                  </tr>
+                </thead>
+                <tbody id="tbodyCasosAnteriores"></tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- 4.3 -->
+          <div class="sub-block">
+            <div class="sub-block-header">
+              <h3>4.3 Audiencias realizadas o programadas</h3>
+              <button type="button" class="btn btn-primary btn-sm" data-add-row="audiencias">+ Agregar audiencia</button>
+            </div>
+            <div class="dyn-table-wrap">
+              <table class="dyn-table">
+                <thead>
+                  <tr>
+                    <th>N°</th>
+                    <th>Carpeta fiscal</th>
+                    <th>Expediente judicial y juzgado</th>
+                    <th>Tipo de audiencia</th>
+                    <th>Resultado</th>
+                    <th>Observación o informe</th>
+                    <th></th>
+                  </tr>
+                </thead>
+                <tbody id="tbodyAudiencias"></tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- 4.4 -->
+          <div class="sub-block">
+            <div class="sub-block-header">
+              <h3>4.4 Levantamientos de cadáver y diligencias urgentes sin detenido</h3>
+              <button type="button" class="btn btn-primary btn-sm" data-add-row="levantamientos">+ Agregar diligencia</button>
+            </div>
+            <div class="dyn-table-wrap">
+              <table class="dyn-table">
+                <thead>
+                  <tr>
+                    <th>N°</th>
+                    <th>Caso</th>
+                    <th>Diligencia</th>
+                    <th>Lugar</th>
+                    <th>Fecha y hora</th>
+                    <th>Observaciones</th>
+                    <th></th>
+                  </tr>
+                </thead>
+                <tbody id="tbodyLevantamientos"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- STEP 5: Derivados y Detenciones -->
+        <div class="step-pane hidden" data-step="5">
+          <div class="section-header">
+            <div>
+              <h2>5. Casos Derivados, Pendientes y Detenciones por Vencer</h2>
+              <p>Seguimiento de carpetas remitidas a otros despachos o con plazo límite próximo.</p>
+            </div>
+            <button type="button" class="btn btn-primary btn-sm" data-add-row="casosDerivados">+ Agregar registro</button>
+          </div>
+          <div class="dyn-table-wrap">
+            <table class="dyn-table">
+              <thead>
+                <tr>
+                  <th>N°</th>
+                  <th>Carpeta fiscal</th>
+                  <th>Despacho al que se deriva o a cargo</th>
+                  <th>Motivo</th>
+                  <th>Diligencias pendientes</th>
+                  <th>Fecha y hora límite (si hay detenido)</th>
+                  <th></th>
+                </tr>
+              </thead>
+              <tbody id="tbodyCasosDerivados"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- STEP 6: Incidencias -->
+        <div class="step-pane hidden" data-step="6">
+          <div class="section-header">
+            <div>
+              <h2>6. Incidencias y Problemática Identificada</h2>
+              <p>Si no hubo incidencias en alguno de los rubros, consigne "Sin incidencias".</p>
+            </div>
+            <button type="button" id="btnSinIncidencias" class="btn btn-outline btn-sm">Marcar vacíos como "Sin incidencias"</button>
+          </div>
+          <div class="form-grid">
+            <div class="field col-span-2">
+              <label>Personal y recursos del despacho</label>
+              <textarea data-bind="inc_personal" placeholder="Sin incidencias"></textarea>
+            </div>
+            <div class="field col-span-2">
+              <label>Coordinación con la Unidad de Flagrancia y con otras fiscalías de turno</label>
+              <textarea data-bind="inc_flagrancia_turno" placeholder="Sin incidencias"></textarea>
+            </div>
+            <div class="field col-span-2">
+              <label>Coordinación interinstitucional (PNP, Poder Judicial, Medicina Legal u otras)</label>
+              <textarea data-bind="inc_interinstitucional" placeholder="Sin incidencias"></textarea>
+            </div>
+            <div class="field col-span-2">
+              <label>Recepción de comunicaciones, actas y remisión de carpetas fiscales</label>
+              <textarea data-bind="inc_comunicaciones_carpetas" placeholder="Sin incidencias"></textarea>
+            </div>
+            <div class="field col-span-2">
+              <label>Aspectos logísticos, de infraestructura o de sistemas</label>
+              <textarea data-bind="inc_logistica" placeholder="Sin incidencias"></textarea>
+            </div>
+            <div class="field col-span-2">
+              <label>Otras incidencias</label>
+              <textarea data-bind="inc_otras" placeholder="Sin incidencias"></textarea>
+            </div>
+          </div>
+        </div>
+
+        <!-- STEP 7: Conclusiones, Recomendaciones, Firma y Anexos -->
+        <div class="step-pane hidden" data-step="7">
+          <div class="section-header">
+            <div>
+              <h2>7. Conclusiones, 8. Recomendaciones, Firma y Anexos</h2>
+              <p>Cierre del informe, datos del remitente y documentos adjuntos.</p>
+            </div>
+          </div>
+
+          <div class="sub-block" style="margin-top:0; padding-top:0; border-top:none;">
+            <div class="sub-block-header">
+              <h3>7. Conclusiones</h3>
+              <button type="button" class="btn btn-outline btn-sm" id="btnAddConclusion">+ Agregar conclusión</button>
+            </div>
+            <div id="listConclusiones" class="form-grid" style="grid-template-columns:1fr;"></div>
+          </div>
+
+          <div class="sub-block">
+            <div class="sub-block-header">
+              <h3>8. Recomendaciones y Solicitudes</h3>
+              <button type="button" class="btn btn-outline btn-sm" id="btnAddRecomendacion">+ Agregar recomendación</button>
+            </div>
+            <div id="listRecomendaciones" class="form-grid" style="grid-template-columns:1fr;"></div>
+          </div>
+
+          <div class="sub-block">
+            <div class="sub-block-header">
+              <h3>Firma del Remitente</h3>
+            </div>
+            <div class="form-grid-3">
+              <div class="field">
+                <label>Nombre del remitente</label>
+                <input type="text" data-bind="remitente_nombre" placeholder="Ej. Dr. Juan Pérez Gómez" />
+              </div>
+              <div class="field">
+                <label>Cargo</label>
+                <input type="text" data-bind="remitente_cargo" placeholder="Ej. FISCAL PROVINCIAL" />
+              </div>
+              <div class="field">
+                <label>Iniciales redactor</label>
+                <input type="text" data-bind="iniciales_redactor" placeholder="Ej. JPG/abc" />
+              </div>
+            </div>
+          </div>
+
+          <div class="sub-block">
+            <div class="sub-block-header">
+              <h3>Anexos y Copias</h3>
+            </div>
+            <div class="check-group">
+              <label class="check-pill"><input type="checkbox" data-bind-check="anexo_acta" /> Acta de recepción de llamadas y comunicaciones del turno</label>
+              <label class="check-pill"><input type="checkbox" data-bind-check="anexo_audiencias" /> Informes de audiencia</label>
+              <label class="check-pill"><input type="checkbox" data-bind-check="anexo_excel" /> Cuadro de casos del turno en formato digital (Excel)</label>
+              <label class="check-pill"><input type="checkbox" data-bind-check="anexo_otros_check" /> Otros:</label>
+            </div>
+            <div class="form-grid" style="margin-top:10px;">
+              <div class="field">
+                <label>Otros anexos (especificar)</label>
+                <input type="text" data-bind="otros_anexos" placeholder="Ej. Actas de intervención policial..." />
+              </div>
+              <div class="field">
+                <label>cc: (Con copia a)</label>
+                <input type="text" data-bind="copias_a" placeholder="Ej. Presidencia / Archivo" />
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="step-footer">
+          <button type="button" id="btnPrevStep" class="btn btn-outline">← Sección anterior</button>
+          <span id="stepCounter" style="font-size:12px; color:#475569; font-weight:600;">Sección 1 de 8</span>
+          <button type="button" id="btnNextStep" class="btn btn-primary">Siguiente sección →</button>
+        </div>
+      </section>
+
+      <!-- Panel de Vista Previa A4 -->
+      <aside class="preview-panel" id="previewPanel">
+        <div class="doc-sheet" id="docPreview"></div>
+      </aside>
+    </main>
+  </div>
+
+  <div id="toastContainer" class="toast-container"></div>
+
+  <script src="assets/supabase.min.js"></script>
+  <script src="assets/header-b64.js"></script>
+  <script src="assets/jszip.min.js"></script>
+  <script src="assets/template-docx.js"></script>
+  <script src="assets/docx.iife.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
