@@ -940,14 +940,25 @@ html, body {
 }
 
 .dyn-table td input,
+.dyn-table td select,
 .dyn-table td textarea {
   width: 100%;
-  min-width: 100px;
+  min-width: 90px;
   border: 1px solid #cbd5e1;
   border-radius: 5px;
   padding: 5px 7px;
   font-size: 12px;
   font-family: inherit;
+  background: #ffffff;
+}
+
+.dyn-table td input[type="number"] {
+  min-width: 68px;
+  text-align: center;
+}
+
+.dyn-other-input {
+  margin-top: 4px;
 }
 
 .dyn-table td textarea {

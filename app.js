@@ -21,6 +21,90 @@
       'Se aplicaron, además, las Resoluciones de la Fiscalía de la Nación N° 3190-2026-MP-FN (Directiva "Actuación del Fiscal de Turno en Flagrancia"), N° 3191-2026-MP-FN (versión 02 de la Directiva Técnica "Actividades del Coordinador Nacional y de los Coordinadores Distritales de las Fiscalías Especializadas en Flagrancia Delictiva") y N° 3192-2026-MP-FN (versión 02 de los "Criterios para Determinar la Competencia Material de las Fiscalías de Flagrancia Delictiva y otras Fiscalías de Turno"), emitidas el 13 de octubre de 2026 y publicadas en el diario oficial El Peruano el 14 de octubre de 2026. En virtud de ellas, durante el turno los despachos de las Fiscalías Corporativas Penales se constituyen en fiscalías de turno en flagrancia y asumen los casos en que exista flagrancia delictiva.'
   };
 
+  const DELITOS_FLAGRANCIA = [
+    'Conducción en estado de ebriedad o drogadicción',
+    'Hurto agravado',
+    'Hurto simple',
+    'Robo agravado',
+    'Robo',
+    'Agresiones en contra de las mujeres o integrantes del grupo familiar',
+    'Lesiones leves',
+    'Lesiones graves',
+    'Microcomercialización o posesión de drogas',
+    'Receptación',
+    'Tenencia ilegal de armas de fuego o municiones',
+    'Violencia y resistencia a la autoridad',
+    'Desobediencia o resistencia a la autoridad',
+    'Apropiación ilícita',
+    'Estafa',
+    'Falsificación de documentos',
+    'Falsedad genérica',
+    'Usurpación',
+    'Daños',
+    'Homicidio culposo en accidente de tránsito',
+    'Lesiones culposas en accidente de tránsito',
+    'Peligro común / Peligro por medio de incendio o explosión',
+    'Cohecho activo en el ámbito de la función policial',
+    'Extorsión',
+    'Tocamientos, actos de connotación sexual o actos libidinosos',
+    'Otro'
+  ];
+
+  const MEDIDAS_COERCITIVAS = [
+    'Ninguna',
+    'Personal: Prisión preventiva',
+    'Personal: Detención preliminar judicial',
+    'Personal: Comparecencia con restricciones',
+    'Personal: Comparecencia simple',
+    'Personal: Impedimento de salida del país',
+    'Personal: Detención domiciliaria',
+    'Personal: Suspensión preventiva de derechos',
+    'Real: Incautación',
+    'Real: Embargo',
+    'Real: Secuestro conservativo',
+    'Real: Desalojo preventivo',
+    'Otro'
+  ];
+
+  const RESULTADOS_CASO = [
+    'Principio de oportunidad',
+    'Acuerdo reparatorio',
+    'Incoación de proceso inmediato',
+    'Terminación anticipada',
+    'Acusación directa',
+    'Formalización de la investigación preparatoria',
+    'Ampliación de investigación preliminar o de diligencias',
+    'Archivo',
+    'Derivación a otro despacho',
+    'Otro'
+  ];
+
+  const TIPOS_AUDIENCIA = [
+    'Incoación de proceso inmediato',
+    'Juicio inmediato',
+    'Terminación anticipada',
+    'Prisión preventiva',
+    'Prolongación / cesación de prisión preventiva',
+    'Control de identidad / detención',
+    'Tutela de derechos',
+    'Confirmatoria de incautación',
+    'Comparecencia con restricciones',
+    'Principio de oportunidad / Acuerdo reparatorio',
+    'Otro'
+  ];
+
+  const RESULTADOS_AUDIENCIA = [
+    'Fundado',
+    'Infundado',
+    'Fundado en parte',
+    'Procedente',
+    'Improcedente',
+    'Inadmisible',
+    'Aprobado',
+    'Reprogramado / Suspendido',
+    'Otro'
+  ];
+
   function getDefaultState() {
     const today = new Date();
     const meses = ['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
@@ -74,12 +158,20 @@
       res_terminacion_anticipada: '0',
       res_acusacion: '0',
       res_formalizacion: '0',
-      res_medidas_coercion: '0',
       res_ampliacion: '0',
       res_archivo: '0',
       res_derivacion: '0',
       res_otros_detalle: '',
       res_otros: '0',
+
+      med_prision_preventiva: '0',
+      med_detencion_preliminar: '0',
+      med_comparecencia_restricciones: '0',
+      med_comparecencia_simple: '0',
+      med_impedimento_salida: '0',
+      med_incautacion: '0',
+      med_embargo: '0',
+      med_otras: '0',
       delitos_mayor_incidencia: '',
 
       inc_personal: 'Sin incidencias',
@@ -101,11 +193,8 @@
       copias_a: 'Coordinación Distrital de las Fiscalías Especializadas en Flagrancia Delictiva de Lima Centro / Archivo',
 
       personalApoyo: [{ nombre: '', cargo: '', origen: '', horario: '', observacion: '' }],
-      casosIngresados: [{ n_caso: '', detenidos: '', agraviado: '', delito: '', diligencias: '', resultado: '' }],
-      casosAnteriores: [{ carpeta: '', origen: '', detenidos: '', estado_recibe: '', actuacion: '' }],
-      audiencias: [{ carpeta: '', exp_juzgado: '', tipo_audiencia: '', resultado: '', observacion: '' }],
-      levantamientos: [{ caso: '', diligencia: '', lugar: '', fecha_hora: '', observacion: '' }],
-      casosDerivados: [{ carpeta: '', destino: '', motivo: '', pendiente: '', limite: '' }],
+      casosIngresados: [{ n_caso: '', detenidos: '0', agraviado: '1', delito: '', delito_otro: '', medidas: 'Ninguna', medidas_otro: '', resultado: '', resultado_otro: '' }],
+      audiencias: [{ carpeta: '', exp_juzgado: '', tipo_audiencia: '', tipo_audiencia_otro: '', resultado: '', resultado_otro: '', observacion: '' }],
       conclusiones: ['', ''],
       recomendaciones: ['', '']
     };
@@ -130,34 +219,29 @@
       casos_con_detenido: '2',
       casos_sin_detenido: '1',
       total_detenidos: '3',
-      levantamientos_cadaver: '0',
-      casos_turnos_anteriores: '1',
       detenidos_resueltos: '3',
       detenidos_pendientes: '0',
-      res_proceso_inmediato: '2 (2 procedentes)',
+      res_proceso_inmediato: '1',
       res_principio_oportunidad: '1',
-      delitos_mayor_incidencia: 'Conducción en estado de ebriedad, hurto agravado en grado de tentativa y receptación.',
+      res_ampliacion: '1',
+      med_comparecencia_restricciones: '1',
+      med_incautacion: '1',
+      delitos_mayor_incidencia: 'Conducción en estado de ebriedad o drogadicción (1), Hurto agravado (1), Apropiación ilícita (1)',
       remitente_nombre: 'Dra. María Elena Torres Mendoza',
       remitente_cargo: 'FISCAL PROVINCIAL',
       iniciales_redactor: 'METM/asrc',
       anexo_audiencias: true,
-      copias_a: 'Presidencia de la Junta de Fiscales Superiores de Lima Centro / Archivo',
       personalApoyo: [
         { nombre: 'Dr. Luis Miguel Salazar Cruz', cargo: 'Fiscal Adjunto Provincial', origen: 'Pool de Fiscales PJFS', horario: '14:00 - 22:00', observacion: 'Apoyo en diligencias preliminares y audiencias' }
       ],
       casosIngresados: [
-        { n_caso: '506014505-2026-1412-0', detenidos: 'Juan Carlos Rojas Díaz (1)', agraviado: 'La Sociedad', delito: 'Conducción en estado de ebriedad', diligencias: 'Dosaje etílico, acta de intervención, declaración', resultado: 'Principio de oportunidad / Libertad' },
-        { n_caso: '506014505-2026-1413-0', detenidos: 'Pedro Pablo Medina Sosa, Luis Ángel Cruz Tito (2)', agraviado: 'Tienda Comercial Metro S.A.', delito: 'Hurto agravado en grado de tentativa', diligencias: 'Inspección técnico policial, visualización de cámaras, actas', resultado: 'Requerimiento de incoación de proceso inmediato' },
-        { n_caso: '506014505-2026-1414-0', detenidos: 'Sin detenido', agraviado: 'Rosaura Méndez Huamán', delito: 'Apropiación ilícita', diligencias: 'Denuncia directa y constatación', resultado: 'En investigación preliminar' }
-      ],
-      casosAnteriores: [
-        { carpeta: '506014505-2026-1409-0', origen: '4.ª FPPFD Lima Centro (Turno 16/11)', detenidos: '1', estado_recibe: 'Detenido con plazo por vencer', actuacion: 'Se sustentó requerimiento de proceso inmediato en audiencia' }
+        { n_caso: '506014505-2026-1412-0', detenidos: '1', agraviado: '1', delito: 'Conducción en estado de ebriedad o drogadicción', delito_otro: '', medidas: 'Personal: Comparecencia simple', medidas_otro: '', resultado: 'Principio de oportunidad', resultado_otro: '' },
+        { n_caso: '506014505-2026-1413-0', detenidos: '2', agraviado: '1', delito: 'Hurto agravado', delito_otro: '', medidas: 'Personal: Comparecencia con restricciones', medidas_otro: '', resultado: 'Incoación de proceso inmediato', resultado_otro: '' },
+        { n_caso: '506014505-2026-1414-0', detenidos: '0', agraviado: '1', delito: 'Apropiación ilícita', delito_otro: '', medidas: 'Real: Incautación', medidas_otro: '', resultado: 'Ampliación de investigación preliminar o de diligencias', resultado_otro: '' }
       ],
       audiencias: [
-        { carpeta: '506014505-2026-1409-0', exp_juzgado: 'Exp. 04122-2026 — 2° Juzgado de Flagrancia', tipo_audiencia: 'Incoación de Proceso Inmediato', resultado: 'Fundado', observacion: 'Se dictó comparecencia con restricciones y se remitió a juicio inmediato.' }
+        { carpeta: '506014505-2026-1413-0', exp_juzgado: 'Exp. 04122-2026 — 2° Juzgado de Flagrancia', tipo_audiencia: 'Incoación de proceso inmediato', tipo_audiencia_otro: '', resultado: 'Fundado', resultado_otro: '', observacion: 'Se dictó comparecencia con restricciones y se remitió a juicio inmediato.' }
       ],
-      levantamientos: [],
-      casosDerivados: [],
       conclusiones: [
         'El turno fiscal se desarrolló con normalidad y dentro de los plazos establecidos por ley, resolviéndose la situación jurídica del 100% de los detenidos.',
         'Se mantuvo coordinación permanente con las comisarías de la jurisdicción y los juzgados de flagrancia delictiva.'
@@ -306,6 +390,104 @@
     updateProgress();
   }
 
+  function getDisplayVal(row, key) {
+    const v = String(row?.[key] || '').trim();
+    if (v === 'Otro') {
+      const custom = String(row?.[key + '_otro'] || '').trim();
+      return custom ? `Otro: ${custom}` : 'Otro';
+    }
+    return v;
+  }
+
+  function recalculateStatsFromCases(syncDom = true) {
+    const casos = state.casosIngresados || [];
+    let conDet = 0;
+    let sinDet = 0;
+    let totalDet = 0;
+
+    const resMap = {
+      'Principio de oportunidad': 'res_principio_oportunidad',
+      'Acuerdo reparatorio': 'res_acuerdo_reparatorio',
+      'Incoación de proceso inmediato': 'res_proceso_inmediato',
+      'Terminación anticipada': 'res_terminacion_anticipada',
+      'Acusación directa': 'res_acusacion',
+      'Formalización de la investigación preparatoria': 'res_formalizacion',
+      'Ampliación de investigación preliminar o de diligencias': 'res_ampliacion',
+      'Archivo': 'res_archivo',
+      'Derivación a otro despacho': 'res_derivacion'
+    };
+
+    const resCounts = {};
+    Object.values(resMap).forEach((k) => { resCounts[k] = 0; });
+    let resOtros = 0;
+    const resOtrosDetalles = [];
+
+    const medCounts = {
+      med_prision_preventiva: 0,
+      med_detencion_preliminar: 0,
+      med_comparecencia_restricciones: 0,
+      med_comparecencia_simple: 0,
+      med_impedimento_salida: 0,
+      med_incautacion: 0,
+      med_embargo: 0,
+      med_otras: 0
+    };
+
+    const delitoFreq = {};
+
+    casos.forEach((c) => {
+      const detN = Math.max(0, parseInt(c.detenidos, 10) || 0);
+      totalDet += detN;
+      if (detN > 0) conDet++;
+      else sinDet++;
+
+      const res = String(c.resultado || '').trim();
+      if (res && resMap[res]) {
+        resCounts[resMap[res]]++;
+      } else if (res === 'Otro') {
+        resOtros++;
+        if (c.resultado_otro) resOtrosDetalles.push(c.resultado_otro.trim());
+      }
+
+      const med = String(c.medidas || '').trim();
+      if (med.includes('Prisión preventiva')) medCounts.med_prision_preventiva++;
+      else if (med.includes('Detención preliminar')) medCounts.med_detencion_preliminar++;
+      else if (med.includes('Comparecencia con restricciones')) medCounts.med_comparecencia_restricciones++;
+      else if (med.includes('Comparecencia simple')) medCounts.med_comparecencia_simple++;
+      else if (med.includes('Impedimento de salida')) medCounts.med_impedimento_salida++;
+      else if (med.includes('Incautación')) medCounts.med_incautacion++;
+      else if (med.includes('Embargo')) medCounts.med_embargo++;
+      else if (med && med !== 'Ninguna') medCounts.med_otras++;
+
+      const delName = getDisplayVal(c, 'delito');
+      if (delName) delitoFreq[delName] = (delitoFreq[delName] || 0) + 1;
+    });
+
+    state.total_casos = String(casos.length);
+    state.casos_con_detenido = String(conDet);
+    state.casos_sin_detenido = String(sinDet);
+    state.total_detenidos = String(totalDet);
+
+    Object.entries(resCounts).forEach(([k, v]) => { state[k] = String(v); });
+    state.res_otros = String(resOtros);
+    if (resOtrosDetalles.length) state.res_otros_detalle = resOtrosDetalles.join(', ');
+
+    Object.entries(medCounts).forEach(([k, v]) => { state[k] = String(v); });
+
+    const topDelitos = Object.entries(delitoFreq)
+      .sort((a, b) => b[1] - a[1])
+      .map(([d, n]) => `${d} (${n})`)
+      .join(', ');
+    if (topDelitos) state.delitos_mayor_incidencia = topDelitos;
+
+    if (syncDom) {
+      $$('[data-bind]').forEach((el) => {
+        const key = el.getAttribute('data-bind');
+        if (key in state) el.value = state[key] ?? '';
+      });
+    }
+  }
+
   function renderDynamicTables() {
     renderTable('tbodyPersonalApoyo', 'personalApoyo', [
       { key: 'nombre', ph: 'Apellidos y nombres' },
@@ -315,40 +497,19 @@
       { key: 'observacion', ph: 'Observaciones' }
     ]);
     renderTable('tbodyCasosIngresados', 'casosIngresados', [
-      { key: 'n_caso', ph: 'Carpeta fiscal' },
-      { key: 'detenidos', ph: 'Nombre(s) o Sin detenido' },
-      { key: 'agraviado', ph: 'Agraviado' },
-      { key: 'delito', ph: 'Delito' },
-      { key: 'diligencias', ph: 'Diligencias', textarea: true },
-      { key: 'resultado', ph: 'Resultado / estado', textarea: true }
-    ]);
-    renderTable('tbodyCasosAnteriores', 'casosAnteriores', [
-      { key: 'carpeta', ph: 'Carpeta fiscal' },
-      { key: 'origen', ph: 'Despacho y turno' },
-      { key: 'detenidos', ph: 'Detenidos' },
-      { key: 'estado_recibe', ph: 'Estado recibido' },
-      { key: 'actuacion', ph: 'Actuación realizada', textarea: true }
+      { key: 'n_caso', ph: 'Ej. 20-2026' },
+      { key: 'detenidos', type: 'number', ph: '0' },
+      { key: 'agraviado', type: 'number', ph: '1' },
+      { key: 'delito', type: 'select', options: DELITOS_FLAGRANCIA, allowOther: true },
+      { key: 'medidas', type: 'select', options: MEDIDAS_COERCITIVAS, allowOther: true },
+      { key: 'resultado', type: 'select', options: RESULTADOS_CASO, allowOther: true }
     ]);
     renderTable('tbodyAudiencias', 'audiencias', [
-      { key: 'carpeta', ph: 'Carpeta fiscal' },
+      { key: 'carpeta', ph: 'Ej. 20-2026' },
       { key: 'exp_juzgado', ph: 'Exp. y juzgado' },
-      { key: 'tipo_audiencia', ph: 'Tipo de audiencia' },
-      { key: 'resultado', ph: 'Resultado' },
+      { key: 'tipo_audiencia', type: 'select', options: TIPOS_AUDIENCIA, allowOther: true },
+      { key: 'resultado', type: 'select', options: RESULTADOS_AUDIENCIA, allowOther: true },
       { key: 'observacion', ph: 'Observación', textarea: true }
-    ]);
-    renderTable('tbodyLevantamientos', 'levantamientos', [
-      { key: 'caso', ph: 'Caso / carpeta' },
-      { key: 'diligencia', ph: 'Diligencia' },
-      { key: 'lugar', ph: 'Lugar' },
-      { key: 'fecha_hora', ph: 'Fecha y hora' },
-      { key: 'observacion', ph: 'Observaciones' }
-    ]);
-    renderTable('tbodyCasosDerivados', 'casosDerivados', [
-      { key: 'carpeta', ph: 'Carpeta fiscal' },
-      { key: 'destino', ph: 'Despacho destino' },
-      { key: 'motivo', ph: 'Motivo' },
-      { key: 'pendiente', ph: 'Diligencias pendientes', textarea: true },
-      { key: 'limite', ph: 'Fecha/hora límite' }
     ]);
   }
 
@@ -364,7 +525,22 @@
       .map((row, idx) => {
         const cells = cols
           .map((c) => {
-            const val = escapeHtml(row[c.key] || '');
+            const rawVal = row[c.key] ?? '';
+            const val = escapeHtml(rawVal);
+            if (c.type === 'select') {
+              const optsHtml = ['<option value="">-- Seleccione --</option>',
+                ...c.options.map((opt) => `<option value="${escapeHtml(opt)}" ${rawVal === opt ? 'selected' : ''}>${escapeHtml(opt)}</option>`)
+              ].join('');
+              const otherVal = escapeHtml(row[c.key + '_otro'] || '');
+              const showOther = c.allowOther && rawVal === 'Otro';
+              return `<td>
+                <select data-arr="${arrayKey}" data-idx="${idx}" data-col="${c.key}">${optsHtml}</select>
+                ${showOther ? `<input type="text" class="dyn-other-input" data-arr="${arrayKey}" data-idx="${idx}" data-col="${c.key}_otro" value="${otherVal}" placeholder="Especifique..." />` : ''}
+              </td>`;
+            }
+            if (c.type === 'number') {
+              return `<td><input type="number" min="0" data-arr="${arrayKey}" data-idx="${idx}" data-col="${c.key}" value="${val}" placeholder="${c.ph || '0'}" /></td>`;
+            }
             if (c.textarea) {
               return `<td><textarea data-arr="${arrayKey}" data-idx="${idx}" data-col="${c.key}" placeholder="${c.ph}">${val}</textarea></td>`;
             }
@@ -396,8 +572,8 @@
         )
         .join('');
     };
-    renderList('listConclusiones', 'conclusiones', '7', 'Conclusión');
-    renderList('listRecomendaciones', 'recomendaciones', '8', 'Recomendación o solicitud');
+    renderList('listConclusiones', 'conclusiones', '6', 'Conclusión');
+    renderList('listRecomendaciones', 'recomendaciones', '7', 'Recomendación o solicitud');
   }
 
   function chk(bool) {
@@ -416,17 +592,17 @@
         .map(
           (r, i) =>
             `<tr><td style="text-align:center;">${i + 1}</td>${cols
-              .map((c) => `<td>${escapeHtml(r[c] || '')}</td>`)
+              .map((c) => `<td>${escapeHtml(getDisplayVal(r, c))}</td>`)
               .join('')}</tr>`
         )
         .join('');
     };
 
     const conHtml = (state.conclusiones || [])
-      .map((c, i) => `<p class="doc-p"><strong>7.${i + 1}</strong> ${valOrPlaceholder(c, 'Sin especificar')}</p>`)
+      .map((c, i) => `<p class="doc-p"><strong>6.${i + 1}</strong> ${valOrPlaceholder(c, 'Sin especificar')}</p>`)
       .join('');
     const recHtml = (state.recomendaciones || [])
-      .map((r, i) => `<p class="doc-p"><strong>8.${i + 1}</strong> ${valOrPlaceholder(r, 'Sin especificar')}</p>`)
+      .map((r, i) => `<p class="doc-p"><strong>7.${i + 1}</strong> ${valOrPlaceholder(r, 'Sin especificar')}</p>`)
       .join('');
 
     el.innerHTML = `
@@ -490,7 +666,23 @@
       </table>
       <p class="doc-p"><strong>Observaciones sobre la disponibilidad del personal:</strong> ${valOrPlaceholder(state.observaciones_personal)}</p>
 
-      <div class="doc-section-title">3. RESUMEN ESTADÍSTICO DEL TURNO</div>
+      <div class="doc-section-title">3. DETALLE DE CASOS</div>
+      <div class="doc-subsection-title">3.1 Casos ingresados durante el turno</div>
+      <table class="doc-table">
+        <thead><tr><th>N°</th><th>Carpeta fiscal / caso</th><th>Detenido(s) (N)</th><th>Agraviado (N)</th><th>Delito</th><th>Medidas coercitivas</th><th>Resultado y estado actual</th></tr></thead>
+        <tbody>
+          ${renderRowsHtml(state.casosIngresados, ['n_caso','detenidos','agraviado','delito','medidas','resultado'], 'Sin casos ingresados')}
+          <tr><td colspan="6" style="font-weight:700;text-align:right;">Total de detenidos del turno</td><td style="font-weight:700;text-align:center;">${escapeHtml(state.total_detenidos)}</td></tr>
+        </tbody>
+      </table>
+
+      <div class="doc-subsection-title">3.2 Audiencias realizadas o programadas</div>
+      <table class="doc-table">
+        <thead><tr><th>N°</th><th>Carpeta fiscal</th><th>Expediente judicial y juzgado</th><th>Tipo de audiencia</th><th>Resultado</th><th>Observación o informe</th></tr></thead>
+        <tbody>${renderRowsHtml(state.audiencias, ['carpeta','exp_juzgado','tipo_audiencia','resultado','observacion'], 'Sin audiencias registradas')}</tbody>
+      </table>
+
+      <div class="doc-section-title">4. RESUMEN ESTADÍSTICO DEL TURNO</div>
       <table class="doc-table">
         <thead><tr><th>Indicador</th><th style="width:110px;text-align:center;">Cantidad</th></tr></thead>
         <tbody>
@@ -498,67 +690,45 @@
           <tr><td>Casos con detenido</td><td style="text-align:center;">${escapeHtml(state.casos_con_detenido)}</td></tr>
           <tr><td>Casos sin detenido</td><td style="text-align:center;">${escapeHtml(state.casos_sin_detenido)}</td></tr>
           <tr><td>Total de detenidos</td><td style="text-align:center;">${escapeHtml(state.total_detenidos)}</td></tr>
-          <tr><td>Levantamientos de cadáver</td><td style="text-align:center;">${escapeHtml(state.levantamientos_cadaver)}</td></tr>
-          <tr><td>Casos recibidos de turnos anteriores</td><td style="text-align:center;">${escapeHtml(state.casos_turnos_anteriores)}</td></tr>
           <tr><td>Detenidos con situación jurídica resuelta dentro del plazo de ley</td><td style="text-align:center;">${escapeHtml(state.detenidos_resueltos)}</td></tr>
           <tr><td>Detenidos con situación jurídica pendiente</td><td style="text-align:center;">${escapeHtml(state.detenidos_pendientes)}</td></tr>
         </tbody>
       </table>
 
-      <div class="doc-subsection-title">3.1 Resultados obtenidos</div>
+      <div class="doc-subsection-title">4.1 Resultados obtenidos</div>
       <table class="doc-table">
         <thead><tr><th>Resultado</th><th style="width:140px;text-align:center;">Cantidad</th></tr></thead>
         <tbody>
           <tr><td>Principio de oportunidad</td><td style="text-align:center;">${escapeHtml(state.res_principio_oportunidad)}</td></tr>
           <tr><td>Acuerdo reparatorio</td><td style="text-align:center;">${escapeHtml(state.res_acuerdo_reparatorio)}</td></tr>
-          <tr><td>Incoación de proceso inmediato (procedente / improcedente)</td><td style="text-align:center;">${escapeHtml(state.res_proceso_inmediato)}</td></tr>
+          <tr><td>Incoación de proceso inmediato</td><td style="text-align:center;">${escapeHtml(state.res_proceso_inmediato)}</td></tr>
           <tr><td>Terminación anticipada</td><td style="text-align:center;">${escapeHtml(state.res_terminacion_anticipada)}</td></tr>
-          <tr><td>Acusación directa o requerimiento acusatorio</td><td style="text-align:center;">${escapeHtml(state.res_acusacion)}</td></tr>
+          <tr><td>Acusación directa</td><td style="text-align:center;">${escapeHtml(state.res_acusacion)}</td></tr>
           <tr><td>Formalización de la investigación preparatoria</td><td style="text-align:center;">${escapeHtml(state.res_formalizacion)}</td></tr>
-          <tr><td>Prisión preventiva solicitada u otra medida de coerción</td><td style="text-align:center;">${escapeHtml(state.res_medidas_coercion)}</td></tr>
           <tr><td>Ampliación de investigación preliminar o de diligencias</td><td style="text-align:center;">${escapeHtml(state.res_ampliacion)}</td></tr>
-          <tr><td>Archivo, libertad por atipicidad u otra disposición de conclusión</td><td style="text-align:center;">${escapeHtml(state.res_archivo)}</td></tr>
+          <tr><td>Archivo</td><td style="text-align:center;">${escapeHtml(state.res_archivo)}</td></tr>
           <tr><td>Derivación a otro despacho</td><td style="text-align:center;">${escapeHtml(state.res_derivacion)}</td></tr>
           <tr><td>Otros resultados: ${escapeHtml(state.res_otros_detalle)}</td><td style="text-align:center;">${escapeHtml(state.res_otros)}</td></tr>
         </tbody>
       </table>
-      <p class="doc-p"><strong>Delitos de mayor incidencia durante el turno:</strong> ${valOrPlaceholder(state.delitos_mayor_incidencia)}.</p>
 
-      <div class="doc-section-title">4. DETALLE DE CASOS</div>
-      <div class="doc-subsection-title">4.1 Casos ingresados durante el turno</div>
+      <div class="doc-subsection-title">4.2 Medidas personales y reales</div>
       <table class="doc-table">
-        <thead><tr><th>N°</th><th>Carpeta fiscal / caso</th><th>Detenido(s)</th><th>Agraviado</th><th>Delito</th><th>Diligencias realizadas</th><th>Resultado y estado</th></tr></thead>
+        <thead><tr><th>Medida coercitiva</th><th style="width:140px;text-align:center;">Cantidad</th></tr></thead>
         <tbody>
-          ${renderRowsHtml(state.casosIngresados, ['n_caso','detenidos','agraviado','delito','diligencias','resultado'], 'Sin casos ingresados')}
-          <tr><td colspan="6" style="font-weight:700;text-align:right;">Total de detenidos del turno</td><td style="font-weight:700;text-align:center;">${escapeHtml(state.total_detenidos)}</td></tr>
+          <tr><td>Prisión preventiva</td><td style="text-align:center;">${escapeHtml(state.med_prision_preventiva)}</td></tr>
+          <tr><td>Detención preliminar judicial</td><td style="text-align:center;">${escapeHtml(state.med_detencion_preliminar)}</td></tr>
+          <tr><td>Comparecencia con restricciones</td><td style="text-align:center;">${escapeHtml(state.med_comparecencia_restricciones)}</td></tr>
+          <tr><td>Comparecencia simple</td><td style="text-align:center;">${escapeHtml(state.med_comparecencia_simple)}</td></tr>
+          <tr><td>Impedimento de salida del país</td><td style="text-align:center;">${escapeHtml(state.med_impedimento_salida)}</td></tr>
+          <tr><td>Incautación</td><td style="text-align:center;">${escapeHtml(state.med_incautacion)}</td></tr>
+          <tr><td>Embargo</td><td style="text-align:center;">${escapeHtml(state.med_embargo)}</td></tr>
+          <tr><td>Otras medidas (personales / reales)</td><td style="text-align:center;">${escapeHtml(state.med_otras)}</td></tr>
         </tbody>
       </table>
+      <p class="doc-p"><strong>Delitos de mayor incidencia durante el turno:</strong> ${valOrPlaceholder(state.delitos_mayor_incidencia)}.</p>
 
-      <div class="doc-subsection-title">4.2 Casos recibidos de turnos anteriores</div>
-      <table class="doc-table">
-        <thead><tr><th>N°</th><th>Carpeta fiscal</th><th>Despacho y turno de origen</th><th>Detenidos</th><th>Estado en que se recibe</th><th>Actuación realizada</th></tr></thead>
-        <tbody>${renderRowsHtml(state.casosAnteriores, ['carpeta','origen','detenidos','estado_recibe','actuacion'], 'Sin casos de turnos anteriores')}</tbody>
-      </table>
-
-      <div class="doc-subsection-title">4.3 Audiencias realizadas o programadas</div>
-      <table class="doc-table">
-        <thead><tr><th>N°</th><th>Carpeta fiscal</th><th>Expediente judicial y juzgado</th><th>Tipo de audiencia</th><th>Resultado</th><th>Observación o informe</th></tr></thead>
-        <tbody>${renderRowsHtml(state.audiencias, ['carpeta','exp_juzgado','tipo_audiencia','resultado','observacion'], 'Sin audiencias registradas')}</tbody>
-      </table>
-
-      <div class="doc-subsection-title">4.4 Levantamientos de cadáver y diligencias urgentes sin detenido</div>
-      <table class="doc-table">
-        <thead><tr><th>N°</th><th>Caso</th><th>Diligencia</th><th>Lugar</th><th>Fecha y hora</th><th>Observaciones</th></tr></thead>
-        <tbody>${renderRowsHtml(state.levantamientos, ['caso','diligencia','lugar','fecha_hora','observacion'], 'Sin levantamientos ni diligencias urgentes registradas')}</tbody>
-      </table>
-
-      <div class="doc-section-title">5. CASOS DERIVADOS, PENDIENTES Y DETENCIONES POR VENCER</div>
-      <table class="doc-table">
-        <thead><tr><th>N°</th><th>Carpeta fiscal</th><th>Despacho destino / a cargo</th><th>Motivo</th><th>Diligencias pendientes</th><th>Fecha y hora límite</th></tr></thead>
-        <tbody>${renderRowsHtml(state.casosDerivados, ['carpeta','destino','motivo','pendiente','limite'], 'Sin casos derivados o detenciones por vencer')}</tbody>
-      </table>
-
-      <div class="doc-section-title">6. INCIDENCIAS Y PROBLEMÁTICA IDENTIFICADA</div>
+      <div class="doc-section-title">5. INCIDENCIAS Y PROBLEMÁTICA IDENTIFICADA</div>
       <p class="doc-p">• <strong>Personal y recursos del despacho:</strong> ${escapeHtml(state.inc_personal)}</p>
       <p class="doc-p">• <strong>Coordinación con la Unidad de Flagrancia y con otras fiscalías de turno:</strong> ${escapeHtml(state.inc_flagrancia_turno)}</p>
       <p class="doc-p">• <strong>Coordinación interinstitucional (PNP, Poder Judicial, Medicina Legal u otras):</strong> ${escapeHtml(state.inc_interinstitucional)}</p>
@@ -566,10 +736,10 @@
       <p class="doc-p">• <strong>Aspectos logísticos, de infraestructura o de sistemas:</strong> ${escapeHtml(state.inc_logistica)}</p>
       <p class="doc-p">• <strong>Otras incidencias:</strong> ${escapeHtml(state.inc_otras)}</p>
 
-      <div class="doc-section-title">7. CONCLUSIONES</div>
+      <div class="doc-section-title">6. CONCLUSIONES</div>
       ${conHtml}
 
-      <div class="doc-section-title">8. RECOMENDACIONES Y SOLICITUDES</div>
+      <div class="doc-section-title">7. RECOMENDACIONES Y SOLICITUDES</div>
       ${recHtml}
 
       <p class="doc-p" style="margin-top:12px;">
@@ -602,16 +772,16 @@
   }
 
   function goToStep(stepIdx) {
-    currentStep = Math.max(0, Math.min(7, stepIdx));
+    currentStep = Math.max(0, Math.min(6, stepIdx));
     $$('.step-pane').forEach((p) => {
       p.classList.toggle('hidden', Number(p.dataset.step) !== currentStep);
     });
     $$('.step-btn').forEach((b) => {
       b.classList.toggle('active', Number(b.dataset.step) === currentStep);
     });
-    $('#stepCounter').textContent = `Sección ${currentStep + 1} de 8`;
+    $('#stepCounter').textContent = `Sección ${currentStep + 1} de 7`;
     $('#btnPrevStep').disabled = currentStep === 0;
-    $('#btnNextStep').disabled = currentStep === 7;
+    $('#btnNextStep').disabled = currentStep === 6;
   }
 
   function isAdminRole(acc = currentAccount) {
@@ -865,61 +1035,141 @@
       '{{observacion}}': r.observacion || ''
     }));
 
-    // Tabla 4.1 Casos ingresados (index 5, keep last row "Total de detenidos del turno")
+    // Tabla 3.1 (antes 4.1) Casos ingresados (index 5, keep last row "Total de detenidos del turno")
+    if (tables[5]) {
+      replaceInNode(tables[5].children[0], {
+        'Detenido(s)': 'Detenido(s) (N)',
+        'Agraviado': 'Agraviado (N)',
+        'Diligencias realizadas': 'Medidas coercitivas'
+      });
+    }
     populateDynamicTable(tables[5], state.casosIngresados, (r) => ({
       '{{n_caso}}': r.n_caso || '',
-      '{{detenidos}}': r.detenidos || '',
-      '{{agraviado}}': r.agraviado || '',
-      '{{delito}}': r.delito || '',
-      '{{diligencias}}': r.diligencias || '',
-      '{{resultado}}': r.resultado || ''
+      '{{detenidos}}': r.detenidos || '0',
+      '{{agraviado}}': r.agraviado || '0',
+      '{{delito}}': getDisplayVal(r, 'delito'),
+      '{{diligencias}}': getDisplayVal(r, 'medidas'),
+      '{{resultado}}': getDisplayVal(r, 'resultado')
     }), 1);
 
-    // Tabla 4.2 Casos turnos anteriores (index 6)
-    populateDynamicTable(tables[6], state.casosAnteriores, (r) => ({
-      '{{carpeta}}': r.carpeta || '',
-      '{{origen}}': r.origen || '',
-      '{{detenidos}}': r.detenidos || '',
-      '{{estado_recibe}}': r.estado_recibe || '',
-      '{{actuacion}}': r.actuacion || ''
-    }));
-
-    // Tabla 4.3 Audiencias (index 7)
+    // Tabla 3.2 (antes 4.3) Audiencias (index 7)
     populateDynamicTable(tables[7], state.audiencias, (r) => ({
       '{{carpeta}}': r.carpeta || '',
       '{{exp_juzgado}}': r.exp_juzgado || '',
-      '{{tipo_audiencia}}': r.tipo_audiencia || '',
-      '{{resultado}}': r.resultado || '',
+      '{{tipo_audiencia}}': getDisplayVal(r, 'tipo_audiencia'),
+      '{{resultado}}': getDisplayVal(r, 'resultado'),
       '{{observacion}}': r.observacion || ''
     }));
 
-    // Tabla 4.4 Levantamientos (index 8)
-    populateDynamicTable(tables[8], state.levantamientos, (r) => ({
-      '{{caso}}': r.caso || '',
-      '{{diligencia}}': r.diligencia || '',
-      '{{lugar}}': r.lugar || '',
-      '{{fecha_hora}}': r.fecha_hora || '',
-      '{{observacion}}': r.observacion || ''
-    }));
+    // Limpiar filas eliminadas en Estadístico (tables[3]) y Resultados (tables[4])
+    const removeTableRowContaining = (tbl, needle) => {
+      if (!tbl) return;
+      Array.from(tbl.children).filter((n) => n.localName === 'tr').forEach((tr) => {
+        const txt = getTextNodes(tr).map((t) => t.textContent).join('');
+        if (txt.includes(needle)) tbl.removeChild(tr);
+      });
+    };
+    removeTableRowContaining(tables[3], 'Levantamientos de cadáver');
+    removeTableRowContaining(tables[3], 'Casos recibidos de turnos anteriores');
+    removeTableRowContaining(tables[4], 'Prisión preventiva solicitada');
+    replaceInNode(tables[4], {
+      'Incoación de proceso inmediato (procedente / improcedente)': 'Incoación de proceso inmediato',
+      'Acusación directa o requerimiento acusatorio': 'Acusación directa',
+      'Archivo, libertad por atipicidad u otra disposición de conclusión': 'Archivo'
+    });
 
-    // Tabla 5 Casos derivados (index 9)
-    populateDynamicTable(tables[9], state.casosDerivados, (r) => ({
-      '{{carpeta}}': r.carpeta || '',
-      '{{destino}}': r.destino || '',
-      '{{motivo}}': r.motivo || '',
-      '{{pendiente}}': r.pendiente || '',
-      '{{limite}}': r.limite || ''
-    }));
+    // Crear tabla 4.2 Medidas personales y reales clonando tables[4]
+    const medTbl = tables[4] ? tables[4].cloneNode(true) : null;
+    if (medTbl) {
+      const mRows = Array.from(medTbl.children).filter((n) => n.localName === 'tr');
+      const hdr = mRows[0];
+      const tplRow = mRows[1] ? mRows[1].cloneNode(true) : null;
+      mRows.slice(1).forEach((r) => medTbl.removeChild(r));
+      if (hdr) replaceInNode(hdr, { 'Resultado': 'Medida coercitiva' });
+      const medItems = [
+        ['Prisión preventiva', state.med_prision_preventiva],
+        ['Detención preliminar judicial', state.med_detencion_preliminar],
+        ['Comparecencia con restricciones', state.med_comparecencia_restricciones],
+        ['Comparecencia simple', state.med_comparecencia_simple],
+        ['Impedimento de salida del país', state.med_impedimento_salida],
+        ['Incautación', state.med_incautacion],
+        ['Embargo', state.med_embargo],
+        ['Otras medidas (personales / reales)', state.med_otras]
+      ];
+      if (tplRow) {
+        medItems.forEach(([label, val]) => {
+          const r = tplRow.cloneNode(true);
+          const cells = Array.from(r.children).filter((n) => n.localName === 'tc');
+          if (cells[0]) { const ts = getTextNodes(cells[0]); if (ts[0]) ts[0].textContent = label; for (let j = 1; j < ts.length; j++) ts[j].textContent = ''; }
+          if (cells[1]) { const ts = getTextNodes(cells[1]); if (ts[0]) ts[0].textContent = String(val ?? '0'); for (let j = 1; j < ts.length; j++) ts[j].textContent = ''; }
+          medTbl.appendChild(r);
+        });
+      }
+    }
+
+    // Reordenar: Mover Sección 3 (Estadístico) después de Sección 4 (Detalle de Casos), y eliminar 4.2, 4.4 y 5
+    const findChildPara = (needle) =>
+      Array.from(body.children).find((n) => n.localName === 'p' && getTextNodes(n).map((t) => t.textContent).join('').includes(needle));
+
+    const pResumen = findChildPara('3. RESUMEN ESTADÍSTICO DEL TURNO');
+    const pResObt = findChildPara('3.1 Resultados obtenidos');
+    const pDelitos = findChildPara('Delitos de mayor incidencia');
+    const pDetalle = findChildPara('4. DETALLE DE CASOS');
+    const pCasosIng = findChildPara('4.1 Casos ingresados durante el turno');
+    const pCasosAnt = findChildPara('4.2 Casos recibidos de turnos anteriores');
+    const pAudiencias = findChildPara('4.3 Audiencias realizadas o programadas');
+    const pLevant = findChildPara('4.4 Levantamientos de cadáver');
+    const pDerivados = findChildPara('5. CASOS DERIVADOS');
+    const pIncidencias = findChildPara('6. INCIDENCIAS');
+
+    // Eliminar secciones tachadas: 4.2, 4.4, 5
+    [pCasosAnt, tables[6], pLevant, tables[8], pDerivados, tables[9]].forEach((node) => {
+      if (node && node.parentNode === body) body.removeChild(node);
+    });
+
+    // Renumerar títulos en Word
+    if (pDetalle) replaceInNode(pDetalle, { '4. DETALLE DE CASOS': '3. DETALLE DE CASOS' });
+    if (pCasosIng) replaceInNode(pCasosIng, { '4.1 Casos ingresados': '3.1 Casos ingresados' });
+    if (pAudiencias) replaceInNode(pAudiencias, { '4.3 Audiencias realizadas': '3.2 Audiencias realizadas' });
+    if (pResumen) replaceInNode(pResumen, { '3. RESUMEN ESTADÍSTICO': '4. RESUMEN ESTADÍSTICO' });
+    if (pResObt) replaceInNode(pResObt, { '3.1 Resultados obtenidos': '4.1 Resultados obtenidos' });
+
+    // Mover bloque estadístico (4. RESUMEN...) antes de 5. INCIDENCIAS (es decir, después de 3.2 Audiencias)
+    if (pIncidencias && pResumen && tables[3] && pResObt && tables[4] && pDelitos) {
+      body.insertBefore(pResumen, pIncidencias);
+      body.insertBefore(tables[3], pIncidencias);
+      body.insertBefore(pResObt, pIncidencias);
+      body.insertBefore(tables[4], pIncidencias);
+      if (medTbl) {
+        const pMedTitle = pResObt.cloneNode(true);
+        const mts = getTextNodes(pMedTitle);
+        if (mts[0]) mts[0].textContent = '4.2 Medidas personales y reales';
+        for (let j = 1; j < mts.length; j++) mts[j].textContent = '';
+        body.insertBefore(pMedTitle, pIncidencias);
+        body.insertBefore(medTbl, pIncidencias);
+      }
+      body.insertBefore(pDelitos, pIncidencias);
+    }
+
+    // Renumerar 6->5 Incidencias, 7->6 Conclusiones, 8->7 Recomendaciones
+    if (pIncidencias) replaceInNode(pIncidencias, { '6. INCIDENCIAS': '5. INCIDENCIAS' });
+    const pConcTitle = findChildPara('7. CONCLUSIONES');
+    if (pConcTitle) replaceInNode(pConcTitle, { '7. CONCLUSIONES': '6. CONCLUSIONES' });
+    const pRecTitle = findChildPara('8. RECOMENDACIONES');
+    if (pRecTitle) replaceInNode(pRecTitle, { '8. RECOMENDACIONES': '7. RECOMENDACIONES' });
 
     // Conclusiones y Recomendaciones dinámicas (<2 o >2 items)
-    const expandListParagraph = (marker2, items, prefix) => {
+    const expandListParagraph = (marker1, marker2, items, prefix) => {
       const paras = Array.from(body.children).filter((n) => n.localName === 'p');
+      const p1 = paras.find((p) => getTextNodes(p).map((t) => t.textContent).join('').includes(marker1));
       const p2 = paras.find((p) => getTextNodes(p).map((t) => t.textContent).join('').includes(marker2));
+      if (p1) replaceInNode(p1, { [`${Number(prefix) + 1}.1`]: `${prefix}.1` });
       if (!p2) return;
       if (items.length < 2) {
         p2.parentNode.removeChild(p2);
         return;
       }
+      replaceInNode(p2, { [`${Number(prefix) + 1}.2`]: `${prefix}.2` });
       let anchor = p2;
       for (let i = 2; i < items.length; i++) {
         const clone = p2.cloneNode(true);
@@ -932,8 +1182,8 @@
         anchor = clone;
       }
     };
-    expandListParagraph('{{conclusion_2}}', state.conclusiones || [], '7');
-    expandListParagraph('{{recomendacion_2}}', state.recomendaciones || [], '8');
+    expandListParagraph('{{conclusion_1}}', '{{conclusion_2}}', state.conclusiones || [], '6');
+    expandListParagraph('{{recomendacion_1}}', '{{recomendacion_2}}', state.recomendaciones || [], '7');
 
     // Actualizar destinataria, referencia y antecedentes si fueron editados
     const bodyParas = Array.from(body.children).filter((n) => n.localName === 'p');
@@ -1266,8 +1516,10 @@
         const idx = Number(t.getAttribute('data-idx'));
         const col = t.getAttribute('data-col');
         state[arr][idx][col] = t.value;
+        if (arr === 'casosIngresados') recalculateStatsFromCases(true);
         saveDraft();
         renderPreview();
+        updateProgress();
       } else if (t.hasAttribute('data-list')) {
         const arr = t.getAttribute('data-list');
         const idx = Number(t.getAttribute('data-idx'));
@@ -1284,6 +1536,17 @@
         state[t.getAttribute('data-bind-check')] = t.checked;
         saveDraft();
         renderPreview();
+      } else if (t.hasAttribute('data-arr') && t.tagName === 'SELECT') {
+        const arr = t.getAttribute('data-arr');
+        const idx = Number(t.getAttribute('data-idx'));
+        const col = t.getAttribute('data-col');
+        state[arr][idx][col] = t.value;
+        if (t.value !== 'Otro') state[arr][idx][col + '_otro'] = '';
+        if (arr === 'casosIngresados') recalculateStatsFromCases(true);
+        saveDraft();
+        renderDynamicTables();
+        renderPreview();
+        updateProgress();
       }
     });
 
@@ -1294,13 +1557,11 @@
         const key = addBtn.getAttribute('data-add-row');
         const templates = {
           personalApoyo: { nombre: '', cargo: '', origen: '', horario: '', observacion: '' },
-          casosIngresados: { n_caso: '', detenidos: '', agraviado: '', delito: '', diligencias: '', resultado: '' },
-          casosAnteriores: { carpeta: '', origen: '', detenidos: '', estado_recibe: '', actuacion: '' },
-          audiencias: { carpeta: '', exp_juzgado: '', tipo_audiencia: '', resultado: '', observacion: '' },
-          levantamientos: { caso: '', diligencia: '', lugar: '', fecha_hora: '', observacion: '' },
-          casosDerivados: { carpeta: '', destino: '', motivo: '', pendiente: '', limite: '' }
+          casosIngresados: { n_caso: '', detenidos: '0', agraviado: '1', delito: '', delito_otro: '', medidas: 'Ninguna', medidas_otro: '', resultado: '', resultado_otro: '' },
+          audiencias: { carpeta: '', exp_juzgado: '', tipo_audiencia: '', tipo_audiencia_otro: '', resultado: '', resultado_otro: '', observacion: '' }
         };
         state[key].push({ ...templates[key] });
+        if (key === 'casosIngresados') recalculateStatsFromCases(true);
         saveDraft();
         renderDynamicTables();
         renderPreview();
@@ -1311,6 +1572,7 @@
         const key = delBtn.getAttribute('data-del-arr');
         const idx = Number(delBtn.getAttribute('data-idx'));
         state[key].splice(idx, 1);
+        if (key === 'casosIngresados') recalculateStatsFromCases(true);
         saveDraft();
         renderDynamicTables();
         renderPreview();
@@ -1355,18 +1617,22 @@
           const startIdx = first.includes('carpeta') || first.includes('caso') || first.includes('n°') ? 1 : 0;
           const imported = rows.slice(startIdx).map((cols) => ({
             n_caso: cols[0] || '',
-            detenidos: cols[1] || '',
-            agraviado: cols[2] || '',
-            delito: cols[3] || '',
-            diligencias: cols[4] || '',
-            resultado: cols[5] || ''
-          })).filter((r) => r.n_caso || r.delito || r.detenidos);
+            detenidos: String(parseInt(cols[1], 10) || 0),
+            agraviado: String(parseInt(cols[2], 10) || 1),
+            delito: DELITOS_FLAGRANCIA.includes(cols[3]) ? cols[3] : (cols[3] ? 'Otro' : ''),
+            delito_otro: DELITOS_FLAGRANCIA.includes(cols[3]) ? '' : (cols[3] || ''),
+            medidas: MEDIDAS_COERCITIVAS.includes(cols[4]) ? cols[4] : (cols[4] ? 'Otro' : 'Ninguna'),
+            medidas_otro: MEDIDAS_COERCITIVAS.includes(cols[4]) ? '' : (cols[4] || ''),
+            resultado: RESULTADOS_CASO.includes(cols[5]) ? cols[5] : (cols[5] ? 'Otro' : ''),
+            resultado_otro: RESULTADOS_CASO.includes(cols[5]) ? '' : (cols[5] || '')
+          })).filter((r) => r.n_caso || r.delito || r.delito_otro);
           if (!imported.length) throw new Error('Sin filas válidas');
           if (state.casosIngresados.length === 1 && !state.casosIngresados[0].n_caso && !state.casosIngresados[0].delito) {
             state.casosIngresados = imported;
           } else {
             state.casosIngresados = state.casosIngresados.concat(imported);
           }
+          recalculateStatsFromCases(true);
           saveDraft();
           renderDynamicTables();
           renderPreview();
@@ -1407,21 +1673,10 @@
     });
 
     $('#btnAutoStats').addEventListener('click', () => {
-      const casos = state.casosIngresados || [];
-      let conDet = 0;
-      let sinDet = 0;
-      casos.forEach((c) => {
-        const d = String(c.detenidos || '').trim().toLowerCase();
-        if (!d || d === 'sin detenido' || d === 'ninguno' || d === '0' || d === '-') sinDet++;
-        else conDet++;
-      });
-      state.total_casos = String(casos.length);
-      state.casos_con_detenido = String(conDet);
-      state.casos_sin_detenido = String(sinDet);
-      state.levantamientos_cadaver = String((state.levantamientos || []).length);
-      state.casos_turnos_anteriores = String((state.casosAnteriores || []).length);
+      recalculateStatsFromCases(true);
       saveDraft();
-      syncInputsFromState();
+      renderPreview();
+      showToast('Estadísticas y medidas recalculadas desde la Sección 3.');
     });
 
     $('#btnTogglePreview').addEventListener('click', () => {

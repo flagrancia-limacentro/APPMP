@@ -232,11 +232,10 @@
           <button type="button" class="step-btn active" data-step="0"><span class="step-num">0</span>Encabezado y Oficio</button>
           <button type="button" class="step-btn" data-step="1"><span class="step-num">1</span>Antecedentes</button>
           <button type="button" class="step-btn" data-step="2"><span class="step-num">2</span>Datos Generales y Personal</button>
-          <button type="button" class="step-btn" data-step="3"><span class="step-num">3</span>Resumen Estadístico</button>
-          <button type="button" class="step-btn" data-step="4"><span class="step-num">4</span>Detalle de Casos</button>
-          <button type="button" class="step-btn" data-step="5"><span class="step-num">5</span>Derivados y Detenciones</button>
-          <button type="button" class="step-btn" data-step="6"><span class="step-num">6</span>Incidencias</button>
-          <button type="button" class="step-btn" data-step="7"><span class="step-num">7</span>Conclusiones, Firma y Anexos</button>
+          <button type="button" class="step-btn" data-step="3"><span class="step-num">3</span>Detalle de Casos y Audiencias</button>
+          <button type="button" class="step-btn" data-step="4"><span class="step-num">4</span>Resumen Estadístico y Medidas</button>
+          <button type="button" class="step-btn" data-step="5"><span class="step-num">5</span>Incidencias</button>
+          <button type="button" class="step-btn" data-step="6"><span class="step-num">6</span>Conclusiones, Firma y Anexos</button>
         </nav>
 
         <div class="sidebar-sede-card">
@@ -429,67 +428,21 @@
           </div>
         </div>
 
-        <!-- STEP 3: Resumen Estadístico -->
+        <!-- STEP 3: Detalle de Casos -->
         <div class="step-pane hidden" data-step="3">
           <div class="section-header">
             <div>
-              <h2>3. Resumen Estadístico del Turno y Resultados</h2>
-              <p>Indicadores cuantitativos del turno y resultados procesales obtenidos.</p>
-            </div>
-            <button type="button" id="btnAutoStats" class="btn btn-outline btn-sm">Calcular desde Sección 4</button>
-          </div>
-
-          <div class="form-grid">
-            <div class="field"><label>Total de casos fiscales recibidos</label><input type="number" min="0" data-bind="total_casos" /></div>
-            <div class="field"><label>Casos con detenido</label><input type="number" min="0" data-bind="casos_con_detenido" /></div>
-            <div class="field"><label>Casos sin detenido</label><input type="number" min="0" data-bind="casos_sin_detenido" /></div>
-            <div class="field"><label>Total de detenidos</label><input type="number" min="0" data-bind="total_detenidos" /></div>
-            <div class="field"><label>Levantamientos de cadáver</label><input type="number" min="0" data-bind="levantamientos_cadaver" /></div>
-            <div class="field"><label>Casos recibidos de turnos anteriores</label><input type="number" min="0" data-bind="casos_turnos_anteriores" /></div>
-            <div class="field"><label>Detenidos con situación jurídica resuelta dentro del plazo</label><input type="number" min="0" data-bind="detenidos_resueltos" /></div>
-            <div class="field"><label>Detenidos con situación jurídica pendiente</label><input type="number" min="0" data-bind="detenidos_pendientes" /></div>
-          </div>
-
-          <div class="sub-block">
-            <div class="sub-block-header">
-              <h3>3.1 Resultados obtenidos</h3>
-            </div>
-            <div class="form-grid">
-              <div class="field"><label>Principio de oportunidad</label><input type="number" min="0" data-bind="res_principio_oportunidad" /></div>
-              <div class="field"><label>Acuerdo reparatorio</label><input type="number" min="0" data-bind="res_acuerdo_reparatorio" /></div>
-              <div class="field"><label>Incoación de proceso inmediato (procedente / improcedente)</label><input type="text" data-bind="res_proceso_inmediato" placeholder="Ej. 2 (2 proc. / 0 improc.)" /></div>
-              <div class="field"><label>Terminación anticipada</label><input type="number" min="0" data-bind="res_terminacion_anticipada" /></div>
-              <div class="field"><label>Acusación directa o requerimiento acusatorio</label><input type="number" min="0" data-bind="res_acusacion" /></div>
-              <div class="field"><label>Formalización de la investigación preparatoria</label><input type="number" min="0" data-bind="res_formalizacion" /></div>
-              <div class="field"><label>Prisión preventiva solicitada u otra medida de coerción</label><input type="number" min="0" data-bind="res_medidas_coercion" /></div>
-              <div class="field"><label>Ampliación de investigación preliminar o de diligencias</label><input type="number" min="0" data-bind="res_ampliacion" /></div>
-              <div class="field"><label>Archivo, libertad por atipicidad u otra disposición de conclusión</label><input type="number" min="0" data-bind="res_archivo" /></div>
-              <div class="field"><label>Derivación a otro despacho</label><input type="number" min="0" data-bind="res_derivacion" /></div>
-              <div class="field"><label>Otros resultados (detalle)</label><input type="text" data-bind="res_otros_detalle" placeholder="Especifique otros resultados..." /></div>
-              <div class="field"><label>Otros resultados (cantidad)</label><input type="number" min="0" data-bind="res_otros" /></div>
-              <div class="field col-span-2">
-                <label>Delitos de mayor incidencia durante el turno</label>
-                <input type="text" data-bind="delitos_mayor_incidencia" placeholder="Ej. Conducción en estado de ebriedad, hurto agravado, violencia familiar..." />
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- STEP 4: Detalle de Casos -->
-        <div class="step-pane hidden" data-step="4">
-          <div class="section-header">
-            <div>
-              <h2>4. Detalle de Casos</h2>
-              <p>Registre los casos ingresados, recibidos de turnos anteriores, audiencias y levantamientos.</p>
+              <h2>3. Detalle de Casos</h2>
+              <p>Registre los casos ingresados y audiencias; el Resumen Estadístico (Sección 4) se actualizará automáticamente.</p>
             </div>
           </div>
 
-          <!-- 4.1 -->
+          <!-- 3.1 -->
           <div class="sub-block" style="margin-top:0; padding-top:0; border-top:none;">
             <div class="sub-block-header">
-              <h3>4.1 Casos ingresados durante el turno</h3>
+              <h3>3.1 Casos ingresados durante el turno</h3>
               <div style="display:flex;gap:6px;">
-                <button type="button" class="btn btn-outline btn-sm" id="btnImportCasosCsv" title="Importar desde CSV (columnas: Carpeta, Detenidos, Agraviado, Delito, Diligencias, Resultado)">Importar CSV</button>
+                <button type="button" class="btn btn-outline btn-sm" id="btnImportCasosCsv" title="Importar desde CSV">Importar CSV</button>
                 <button type="button" class="btn btn-primary btn-sm" data-add-row="casosIngresados">+ Agregar caso</button>
               </div>
             </div>
@@ -500,10 +453,10 @@
                   <tr>
                     <th>N°</th>
                     <th>Carpeta fiscal o N° de caso</th>
-                    <th>Detenido(s)</th>
-                    <th>Agraviado</th>
+                    <th>Detenido(s) (N)</th>
+                    <th>Agraviado (N)</th>
                     <th>Delito</th>
-                    <th>Diligencias realizadas</th>
+                    <th>Medidas coercitivas</th>
                     <th>Resultado y estado actual</th>
                     <th></th>
                   </tr>
@@ -513,34 +466,10 @@
             </div>
           </div>
 
-          <!-- 4.2 -->
+          <!-- 3.2 -->
           <div class="sub-block">
             <div class="sub-block-header">
-              <h3>4.2 Casos recibidos de turnos anteriores</h3>
-              <button type="button" class="btn btn-primary btn-sm" data-add-row="casosAnteriores">+ Agregar caso</button>
-            </div>
-            <div class="dyn-table-wrap">
-              <table class="dyn-table">
-                <thead>
-                  <tr>
-                    <th>N°</th>
-                    <th>Carpeta fiscal</th>
-                    <th>Despacho y turno de origen</th>
-                    <th>Detenidos</th>
-                    <th>Estado en que se recibe</th>
-                    <th>Actuación realizada</th>
-                    <th></th>
-                  </tr>
-                </thead>
-                <tbody id="tbodyCasosAnteriores"></tbody>
-              </table>
-            </div>
-          </div>
-
-          <!-- 4.3 -->
-          <div class="sub-block">
-            <div class="sub-block-header">
-              <h3>4.3 Audiencias realizadas o programadas</h3>
+              <h3>3.2 Audiencias realizadas o programadas</h3>
               <button type="button" class="btn btn-primary btn-sm" data-add-row="audiencias">+ Agregar audiencia</button>
             </div>
             <div class="dyn-table-wrap">
@@ -560,64 +489,72 @@
               </table>
             </div>
           </div>
+        </div>
 
-          <!-- 4.4 -->
+        <!-- STEP 4: Resumen Estadístico -->
+        <div class="step-pane hidden" data-step="4">
+          <div class="section-header">
+            <div>
+              <h2>4. Resumen Estadístico del Turno</h2>
+              <p>Se actualiza automáticamente con los casos, medidas y resultados registrados en la Sección 3.</p>
+            </div>
+            <button type="button" id="btnAutoStats" class="btn btn-outline btn-sm">Recalcular desde Sección 3</button>
+          </div>
+
+          <div class="form-grid">
+            <div class="field"><label>Total de casos fiscales recibidos</label><input type="number" min="0" data-bind="total_casos" /></div>
+            <div class="field"><label>Casos con detenido</label><input type="number" min="0" data-bind="casos_con_detenido" /></div>
+            <div class="field"><label>Casos sin detenido</label><input type="number" min="0" data-bind="casos_sin_detenido" /></div>
+            <div class="field"><label>Total de detenidos</label><input type="number" min="0" data-bind="total_detenidos" /></div>
+            <div class="field"><label>Detenidos con situación jurídica resuelta dentro del plazo</label><input type="number" min="0" data-bind="detenidos_resueltos" /></div>
+            <div class="field"><label>Detenidos con situación jurídica pendiente</label><input type="number" min="0" data-bind="detenidos_pendientes" /></div>
+          </div>
+
           <div class="sub-block">
             <div class="sub-block-header">
-              <h3>4.4 Levantamientos de cadáver y diligencias urgentes sin detenido</h3>
-              <button type="button" class="btn btn-primary btn-sm" data-add-row="levantamientos">+ Agregar diligencia</button>
+              <h3>4.1 Resultados obtenidos</h3>
             </div>
-            <div class="dyn-table-wrap">
-              <table class="dyn-table">
-                <thead>
-                  <tr>
-                    <th>N°</th>
-                    <th>Caso</th>
-                    <th>Diligencia</th>
-                    <th>Lugar</th>
-                    <th>Fecha y hora</th>
-                    <th>Observaciones</th>
-                    <th></th>
-                  </tr>
-                </thead>
-                <tbody id="tbodyLevantamientos"></tbody>
-              </table>
+            <div class="form-grid">
+              <div class="field"><label>Principio de oportunidad</label><input type="number" min="0" data-bind="res_principio_oportunidad" /></div>
+              <div class="field"><label>Acuerdo reparatorio</label><input type="number" min="0" data-bind="res_acuerdo_reparatorio" /></div>
+              <div class="field"><label>Incoación de proceso inmediato</label><input type="number" min="0" data-bind="res_proceso_inmediato" /></div>
+              <div class="field"><label>Terminación anticipada</label><input type="number" min="0" data-bind="res_terminacion_anticipada" /></div>
+              <div class="field"><label>Acusación directa</label><input type="number" min="0" data-bind="res_acusacion" /></div>
+              <div class="field"><label>Formalización de la investigación preparatoria</label><input type="number" min="0" data-bind="res_formalizacion" /></div>
+              <div class="field"><label>Ampliación de investigación preliminar o de diligencias</label><input type="number" min="0" data-bind="res_ampliacion" /></div>
+              <div class="field"><label>Archivo</label><input type="number" min="0" data-bind="res_archivo" /></div>
+              <div class="field"><label>Derivación a otro despacho</label><input type="number" min="0" data-bind="res_derivacion" /></div>
+              <div class="field"><label>Otros resultados (detalle)</label><input type="text" data-bind="res_otros_detalle" placeholder="Especifique otros resultados..." /></div>
+              <div class="field"><label>Otros resultados (cantidad)</label><input type="number" min="0" data-bind="res_otros" /></div>
+            </div>
+          </div>
+
+          <div class="sub-block">
+            <div class="sub-block-header">
+              <h3>4.2 Medidas personales y reales</h3>
+            </div>
+            <div class="form-grid">
+              <div class="field"><label>Prisión preventiva</label><input type="number" min="0" data-bind="med_prision_preventiva" /></div>
+              <div class="field"><label>Detención preliminar judicial</label><input type="number" min="0" data-bind="med_detencion_preliminar" /></div>
+              <div class="field"><label>Comparecencia con restricciones</label><input type="number" min="0" data-bind="med_comparecencia_restricciones" /></div>
+              <div class="field"><label>Comparecencia simple</label><input type="number" min="0" data-bind="med_comparecencia_simple" /></div>
+              <div class="field"><label>Impedimento de salida del país</label><input type="number" min="0" data-bind="med_impedimento_salida" /></div>
+              <div class="field"><label>Incautación</label><input type="number" min="0" data-bind="med_incautacion" /></div>
+              <div class="field"><label>Embargo</label><input type="number" min="0" data-bind="med_embargo" /></div>
+              <div class="field"><label>Otras medidas (personales / reales)</label><input type="number" min="0" data-bind="med_otras" /></div>
+              <div class="field col-span-2">
+                <label>Delitos de mayor incidencia durante el turno</label>
+                <input type="text" data-bind="delitos_mayor_incidencia" placeholder="Se autocompleta según los delitos registrados en la Sección 3.1" />
+              </div>
             </div>
           </div>
         </div>
 
-        <!-- STEP 5: Derivados y Detenciones -->
+        <!-- STEP 5: Incidencias -->
         <div class="step-pane hidden" data-step="5">
           <div class="section-header">
             <div>
-              <h2>5. Casos Derivados, Pendientes y Detenciones por Vencer</h2>
-              <p>Seguimiento de carpetas remitidas a otros despachos o con plazo límite próximo.</p>
-            </div>
-            <button type="button" class="btn btn-primary btn-sm" data-add-row="casosDerivados">+ Agregar registro</button>
-          </div>
-          <div class="dyn-table-wrap">
-            <table class="dyn-table">
-              <thead>
-                <tr>
-                  <th>N°</th>
-                  <th>Carpeta fiscal</th>
-                  <th>Despacho al que se deriva o a cargo</th>
-                  <th>Motivo</th>
-                  <th>Diligencias pendientes</th>
-                  <th>Fecha y hora límite (si hay detenido)</th>
-                  <th></th>
-                </tr>
-              </thead>
-              <tbody id="tbodyCasosDerivados"></tbody>
-            </table>
-          </div>
-        </div>
-
-        <!-- STEP 6: Incidencias -->
-        <div class="step-pane hidden" data-step="6">
-          <div class="section-header">
-            <div>
-              <h2>6. Incidencias y Problemática Identificada</h2>
+              <h2>5. Incidencias y Problemática Identificada</h2>
               <p>Si no hubo incidencias en alguno de los rubros, consigne "Sin incidencias".</p>
             </div>
             <button type="button" id="btnSinIncidencias" class="btn btn-outline btn-sm">Marcar vacíos como "Sin incidencias"</button>
@@ -650,18 +587,18 @@
           </div>
         </div>
 
-        <!-- STEP 7: Conclusiones, Recomendaciones, Firma y Anexos -->
-        <div class="step-pane hidden" data-step="7">
+        <!-- STEP 6: Conclusiones, Recomendaciones, Firma y Anexos -->
+        <div class="step-pane hidden" data-step="6">
           <div class="section-header">
             <div>
-              <h2>7. Conclusiones, 8. Recomendaciones, Firma y Anexos</h2>
+              <h2>6. Conclusiones, 7. Recomendaciones, Firma y Anexos</h2>
               <p>Cierre del informe, datos del remitente y documentos adjuntos.</p>
             </div>
           </div>
 
           <div class="sub-block" style="margin-top:0; padding-top:0; border-top:none;">
             <div class="sub-block-header">
-              <h3>7. Conclusiones</h3>
+              <h3>6. Conclusiones</h3>
               <button type="button" class="btn btn-outline btn-sm" id="btnAddConclusion">+ Agregar conclusión</button>
             </div>
             <div id="listConclusiones" class="form-grid" style="grid-template-columns:1fr;"></div>
@@ -669,7 +606,7 @@
 
           <div class="sub-block">
             <div class="sub-block-header">
-              <h3>8. Recomendaciones y Solicitudes</h3>
+              <h3>7. Recomendaciones y Solicitudes</h3>
               <button type="button" class="btn btn-outline btn-sm" id="btnAddRecomendacion">+ Agregar recomendación</button>
             </div>
             <div id="listRecomendaciones" class="form-grid" style="grid-template-columns:1fr;"></div>
