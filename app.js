@@ -946,6 +946,14 @@
         state.siglas_despacho = account.siglas;
       }
 
+      if (!state.destinataria_nombre || state.destinataria_nombre.includes('LILLY')) {
+        state.destinataria_nombre = 'SONIA ALBINA CHÁVEZ GIL';
+        state.destinataria_cargo = 'Presidenta de la Junta de Fiscales Superiores del Distrito Fiscal de Lima Centro';
+      }
+      if (!state.copias_a || state.copias_a === 'Archivo') {
+        state.copias_a = 'Coordinación Distrital de las Fiscalías Especializadas en Flagrancia Delictiva de Lima Centro / Archivo';
+      }
+
       if (isAdminRole(account)) {
         showAdminPanel();
       } else {
@@ -1203,8 +1211,8 @@
 
     // Reemplazo global de todos los campos y checkboxes del modelo
     const replacements = {
-      'LILLY LORENA GELACIO LLONTOP': state.destinataria_nombre || 'LILLY LORENA GELACIO LLONTOP',
-      'Coordinadora Distrital de las Fiscalías Especializadas en Flagrancia Delictiva de Lima Centro': state.destinataria_cargo || 'Coordinadora Distrital de las Fiscalías Especializadas en Flagrancia Delictiva de Lima Centro',
+      'LILLY LORENA GELACIO LLONTOP': state.destinataria_nombre || 'SONIA ALBINA CHÁVEZ GIL',
+      'Coordinadora Distrital de las Fiscalías Especializadas en Flagrancia Delictiva de Lima Centro': state.destinataria_cargo || 'Presidenta de la Junta de Fiscales Superiores del Distrito Fiscal de Lima Centro',
       'OFICIO CIRCULAR N° 000137-2026-MP-FN-PJFSLIMA (06NOV2026)': state.referencia || 'OFICIO CIRCULAR N° 000137-2026-MP-FN-PJFSLIMA (06NOV2026)',
       '{{fecha_informe}}': state.fecha_informe,
       '{{numero_informe}}': state.numero_informe || '____',
