@@ -31,8 +31,8 @@
       anio: String(today.getFullYear()),
       siglas_despacho: '',
       nombre_despacho_emisor: '',
-      destinataria_nombre: 'LILLY LORENA GELACIO LLONTOP',
-      destinataria_cargo: 'Coordinadora Distrital de las Fiscalías Especializadas en Flagrancia Delictiva de Lima Centro',
+      destinataria_nombre: 'SONIA ALBINA CHÁVEZ GIL',
+      destinataria_cargo: 'Presidenta de la Junta de Fiscales Superiores del Distrito Fiscal de Lima Centro',
       tipo_turno_asunto: 'DE FLAGRANCIA DELICTIVA',
       referencia: 'OFICIO CIRCULAR N° 000137-2026-MP-FN-PJFSLIMA (06NOV2026)',
       fecha_inicio: '',
@@ -98,7 +98,7 @@
       anexo_excel: true,
       anexo_otros_check: false,
       otros_anexos: '',
-      copias_a: 'Archivo',
+      copias_a: 'Coordinación Distrital de las Fiscalías Especializadas en Flagrancia Delictiva de Lima Centro / Archivo',
 
       personalApoyo: [{ nombre: '', cargo: '', origen: '', horario: '', observacion: '' }],
       casosIngresados: [{ n_caso: '', detenidos: '', agraviado: '', delito: '', diligencias: '', resultado: '' }],
@@ -614,19 +614,29 @@
     $('#btnNextStep').disabled = currentStep === 7;
   }
 
+  function isAdminRole(acc = currentAccount) {
+    return Boolean(acc && (acc.role === 'admin' || acc.role === 'presidencia'));
+  }
+
   function showAdminPanel() {
     $('#adminPanel').classList.remove('hidden');
     $('#workspace').classList.add('hidden');
     $('#btnSendToCoord').classList.add('hidden');
     $('#btnBackToAdmin').classList.add('hidden');
+    const titleEl = $('#adminPanelTitle');
+    if (titleEl && currentAccount) {
+      titleEl.textContent = currentAccount.role === 'presidencia'
+        ? 'Panel de Presidencia — Junta de Fiscales Superiores del Distrito Fiscal de Lima Centro'
+        : 'Panel de Coordinación — Fiscalías Especializadas en Flagrancia Delictiva de Lima Centro';
+    }
     renderAdminDashboard();
   }
 
   function showEditorWorkspace() {
     $('#adminPanel').classList.add('hidden');
     $('#workspace').classList.remove('hidden');
-    $('#btnSendToCoord').classList.toggle('hidden', currentAccount.role === 'admin');
-    $('#btnBackToAdmin').classList.toggle('hidden', currentAccount.role !== 'admin');
+    $('#btnSendToCoord').classList.toggle('hidden', isAdminRole());
+    $('#btnBackToAdmin').classList.toggle('hidden', !isAdminRole());
   }
 
   async function renderAdminDashboard() {
@@ -741,7 +751,7 @@
     }
 
     bar.style.width = '75%';
-    status.textContent = account.role === 'admin' ? 'Cargando panel de Coordinación...' : 'Cargando plantilla del despacho...';
+    status.textContent = isAdminRole(account) ? 'Cargando panel de supervisión...' : 'Cargando plantilla del despacho...';
 
     setTimeout(() => {
       bar.style.width = '100%';
@@ -766,7 +776,7 @@
         state.siglas_despacho = account.siglas;
       }
 
-      if (account.role === 'admin') {
+      if (isAdminRole(account)) {
         showAdminPanel();
       } else {
         showEditorWorkspace();
@@ -1116,9 +1126,9 @@
       try {
         await syncCloudRecord('enviado');
         if (missing.length) {
-          showToast(`Enviado a Coordinación (aviso: faltó completar ${missing.join(', ')}).`);
+          showToast(`Enviado a Presidencia (c.c. Coordinación) (aviso: faltó completar ${missing.join(', ')}).`);
         } else {
-          showToast('Informe enviado a Coordinación de Flagrancia Delictiva de Lima Centro.');
+          showToast('Informe enviado a Presidencia de la Junta de Fiscales Superiores (c.c. Coordinación).');
         }
       } catch (err) {
         showToast('Error al enviar a Coordinación: ' + err.message, true);
@@ -1474,7 +1484,7 @@
       reader.onload = async () => {
         try {
           const imported = { ...getDefaultState(), ...JSON.parse(reader.result) };
-          if (currentAccount.role === 'admin' && !$('#adminPanel').classList.contains('hidden')) {
+          if (isAdminRole() && !$('#adminPanel').classList.contains('hidden')) {
             await sb.from('informes_turno').insert({
               user_id: currentAccount.id,
               username: 'importado',

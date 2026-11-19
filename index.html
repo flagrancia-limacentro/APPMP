@@ -139,8 +139,8 @@
 
       <div class="topbar-actions">
         <span id="saveIndicator" class="save-badge">Guardado automático</span>
-        <button type="button" id="btnBackToAdmin" class="btn btn-gold hidden">Panel Coordinación</button>
-        <button type="button" id="btnSendToCoord" class="btn btn-primary">Enviar a Coordinación</button>
+        <button type="button" id="btnBackToAdmin" class="btn btn-gold hidden">Panel Supervisión</button>
+        <button type="button" id="btnSendToCoord" class="btn btn-primary">Enviar a Presidencia (c.c. Coordinación)</button>
         <button type="button" id="btnTogglePreview" class="btn btn-ghost">Ocultar Vista Previa</button>
         <button type="button" id="btnFillExample" class="btn btn-ghost">Cargar Ejemplo</button>
         <button type="button" id="btnImportJson" class="btn btn-ghost">Importar JSON</button>
@@ -154,12 +154,12 @@
 
     <input type="file" id="jsonFileInput" accept=".json" class="hidden" />
 
-    <!-- PANEL ADMINISTRACIÓN (COORDINACIÓN) -->
+    <!-- PANEL ADMINISTRACIÓN (PRESIDENCIA / COORDINACIÓN) -->
     <section id="adminPanel" class="admin-shell hidden">
       <div class="section-header" style="margin-bottom:16px;">
         <div>
-          <h2>Panel de Administración — Coordinación Distrital de Flagrancia Delictiva de Lima Centro</h2>
-          <p>Supervisión de las 9 Fiscalías Provinciales Penales de Flagrancia Delictiva e informes remitidos.</p>
+          <h2 id="adminPanelTitle">Panel de Administración — Presidencia / Coordinación</h2>
+          <p id="adminPanelSubtitle">Supervisión de las 9 Fiscalías Provinciales Penales de Flagrancia Delictiva e informes remitidos.</p>
         </div>
         <div style="display:flex;gap:8px;flex-wrap:wrap;">
           <button type="button" id="btnAdminExportCsv" class="btn btn-gold">Exportar Consolidado (.csv)</button>
