@@ -1364,6 +1364,17 @@
 
   // ================= EVENTOS =================
   document.addEventListener('DOMContentLoaded', async () => {
+    const accSelect = $('#loginAccountSelect');
+    if (accSelect) {
+      accSelect.addEventListener('change', () => {
+        if (accSelect.value) {
+          $('#loginUser').value = accSelect.value;
+          $('#loginError').classList.add('hidden');
+          $('#loginPassword').focus();
+        }
+      });
+    }
+
     const togglePwd = $('#btnTogglePwd');
     if (togglePwd) {
       togglePwd.addEventListener('click', () => {
