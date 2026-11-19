@@ -22,47 +22,89 @@
   };
 
   const DELITOS_FLAGRANCIA = [
-    'Conducción en estado de ebriedad o drogadicción',
-    'Hurto agravado',
-    'Hurto simple',
-    'Robo agravado',
-    'Robo',
-    'Agresiones en contra de las mujeres o integrantes del grupo familiar',
-    'Lesiones leves',
-    'Lesiones graves',
-    'Microcomercialización o posesión de drogas',
-    'Receptación',
-    'Tenencia ilegal de armas de fuego o municiones',
-    'Violencia y resistencia a la autoridad',
-    'Desobediencia o resistencia a la autoridad',
-    'Apropiación ilícita',
-    'Estafa',
-    'Falsificación de documentos',
-    'Falsedad genérica',
-    'Usurpación',
-    'Daños',
-    'Homicidio culposo en accidente de tránsito',
-    'Lesiones culposas en accidente de tránsito',
-    'Peligro común / Peligro por medio de incendio o explosión',
-    'Cohecho activo en el ámbito de la función policial',
-    'Extorsión',
-    'Tocamientos, actos de connotación sexual o actos libidinosos',
+    // Contra la Seguridad Pública (Peligro Común, Armas, Drogas)
+    'Conducción en estado de ebriedad o drogadicción (Art. 274 CP)',
+    'Tenencia o porte ilegal de armas de fuego, municiones o explosivos (Art. 279-G CP)',
+    'Microcomercialización o posesión de drogas (Art. 298 CP)',
+    'Promoción o favorecimiento al tráfico ilícito de drogas (Art. 296 CP)',
+    'Peligro por medio de incendio o explosión (Art. 273 CP)',
+    'Fabricación, suministro o tenencia de materiales peligrosos (Art. 279 CP)',
+    // Contra el Patrimonio
+    'Hurto simple (Art. 185 CP)',
+    'Hurto agravado (Art. 186 CP)',
+    'Hurto de uso (Art. 187 CP)',
+    'Robo (Art. 188 CP)',
+    'Robo agravado (Art. 189 CP)',
+    'Receptación (Art. 194 CP)',
+    'Receptación agravada (Art. 195 CP)',
+    'Apropiación ilícita común (Art. 190 CP)',
+    'Estafa y otras defraudaciones (Art. 196 / 196-A CP)',
+    'Extorsión (Art. 200 CP)',
+    'Chantaje (Art. 201 CP)',
+    'Usurpación / Usurpación agravada (Art. 202 / 204 CP)',
+    'Daños simples y agravados (Art. 205 / 206 CP)',
+    'Fraude informático / Suplantación de identidad (Ley 30096)',
+    // Contra la Vida, el Cuerpo y la Salud / Violencia Familiar
+    'Agresiones en contra de las mujeres o integrantes del grupo familiar (Art. 122-B CP)',
+    'Lesiones leves (Art. 122 CP)',
+    'Lesiones graves (Art. 121 CP)',
+    'Lesiones por violencia contra las mujeres e integrantes del grupo familiar (Art. 121-B CP)',
+    'Lesiones culposas en accidente de tránsito (Art. 124 CP)',
+    'Homicidio culposo en accidente de tránsito (Art. 111 CP)',
+    'Homicidio simple / calificado (Art. 106 / 108 CP)',
+    'Feminicidio / Tentativa de feminicidio (Art. 108-B CP)',
+    'Omisión de socorro y exposición al peligro (Art. 126 CP)',
+    // Contra la Libertad / Indemnidad Sexual
+    'Coacción (Art. 151 CP)',
+    'Secuestro (Art. 152 CP)',
+    'Acoso / Acoso sexual (Art. 151-A / 176-B CP)',
+    'Chantaje sexual (Art. 176-C CP)',
+    'Violación sexual (Art. 170 CP)',
+    'Tocamientos, actos de connotación sexual o actos libidinosos (Art. 176 / 176-A CP)',
+    'Violación de domicilio (Art. 159 CP)',
+    'Trata de personas (Art. 129-A CP)',
+    // Contra la Familia
+    'Omisión a la asistencia familiar (Art. 149 CP)',
+    'Sustracción de menor (Art. 147 CP)',
+    // Contra la Administración Pública y Fe Pública
+    'Violencia y resistencia a la autoridad (Art. 365 / 366 / 367 CP)',
+    'Desobediencia o resistencia a la autoridad / Medidas de protección (Art. 368 CP)',
+    'Fuga del lugar del accidente de tránsito (Art. 408 CP)',
+    'Cohecho activo en el ámbito de la función policial (Art. 398-A CP)',
+    'Cohecho activo genérico (Art. 397 CP)',
+    'Usurpación de autoridad, títulos u honores (Art. 361 CP)',
+    'Falsificación de documentos en general (Art. 427 CP)',
+    'Falsedad ideológica (Art. 428 CP)',
+    'Falsedad genérica (Art. 438 CP)',
+    'Falsificación de moneda / billetes (Art. 252 CP)',
+    // Contra la Tranquilidad Pública
+    'Disturbios (Art. 315 CP)',
+    'Marcaje o reglaje (Art. 317-A CP)',
+    'Banda criminal (Art. 317-B CP)',
     'Otro'
   ];
 
   const MEDIDAS_COERCITIVAS = [
     'Ninguna',
-    'Personal: Prisión preventiva',
-    'Personal: Detención preliminar judicial',
-    'Personal: Comparecencia con restricciones',
-    'Personal: Comparecencia simple',
-    'Personal: Impedimento de salida del país',
-    'Personal: Detención domiciliaria',
-    'Personal: Suspensión preventiva de derechos',
-    'Real: Incautación',
-    'Real: Embargo',
+    'Personal: Detención policial en flagrancia (Art. 259 CPP)',
+    'Personal: Detención preliminar judicial (Art. 261 CPP)',
+    'Personal: Convalidación de detención preliminar (Art. 266 CPP)',
+    'Personal: Prisión preventiva (Art. 268 CPP)',
+    'Personal: Prolongación de prisión preventiva (Art. 274 CPP)',
+    'Personal: Comparecencia con restricciones (Art. 287 CPP)',
+    'Personal: Comparecencia simple (Art. 286 CPP)',
+    'Personal: Detención domiciliaria (Art. 290 CPP)',
+    'Personal: Impedimento de salida del país (Art. 295 CPP)',
+    'Personal: Suspensión preventiva de derechos (Art. 297 CPP)',
+    'Personal: Internación preventiva (Art. 293 CPP)',
+    'Personal: Vigilancia electrónica personal',
+    'Real: Incautación (Art. 316 CPP)',
+    'Real: Confirmatoria de incautación (Art. 316.2 CPP)',
+    'Real: Embargo (Art. 302 CPP)',
+    'Real: Orden de inhibición (Art. 310 CPP)',
+    'Real: Desalojo preventivo y ministración provisional (Art. 311 CPP)',
     'Real: Secuestro conservativo',
-    'Real: Desalojo preventivo',
+    'Real: Pensión anticipada de alimentos (Art. 314 CPP)',
     'Otro'
   ];
 
@@ -80,27 +122,33 @@
   ];
 
   const TIPOS_AUDIENCIA = [
-    'Incoación de proceso inmediato',
-    'Juicio inmediato',
-    'Terminación anticipada',
-    'Prisión preventiva',
-    'Prolongación / cesación de prisión preventiva',
-    'Control de identidad / detención',
-    'Tutela de derechos',
-    'Confirmatoria de incautación',
-    'Comparecencia con restricciones',
+    'Audiencia Única de Incoación de Proceso Inmediato (Art. 447 CPP)',
+    'Audiencia Única de Juicio Inmediato (Art. 448 CPP)',
+    'Terminación anticipada (Art. 468 CPP)',
+    'Prisión preventiva (Art. 271 CPP)',
+    'Prolongación / cesación / revocatoria de prisión preventiva',
+    'Detención preliminar / Convalidación de detención',
+    'Comparecencia con restricciones / Impedimento de salida',
+    'Control de identidad / Control de plazo',
+    'Tutela de derechos (Art. 71.4 CPP)',
+    'Confirmatoria / reexamen de incautación',
     'Principio de oportunidad / Acuerdo reparatorio',
+    'Control de acusación / Etapa intermedia',
+    'Juicio oral / Lectura de sentencia',
     'Otro'
   ];
 
   const RESULTADOS_AUDIENCIA = [
     'Fundado',
-    'Infundado',
     'Fundado en parte',
+    'Infundado',
     'Procedente',
     'Improcedente',
     'Inadmisible',
-    'Aprobado',
+    'Aprobado (Acuerdo / Terminación anticipada)',
+    'Desaprobado',
+    'Sentencia condenatoria',
+    'Sentencia absolutoria',
     'Reprogramado / Suspendido',
     'Otro'
   ];
@@ -235,12 +283,12 @@
         { nombre: 'Dr. Luis Miguel Salazar Cruz', cargo: 'Fiscal Adjunto Provincial', origen: 'Pool de Fiscales PJFS', horario: '14:00 - 22:00', observacion: 'Apoyo en diligencias preliminares y audiencias' }
       ],
       casosIngresados: [
-        { n_caso: '506014505-2026-1412-0', detenidos: '1', agraviado: '1', delito: 'Conducción en estado de ebriedad o drogadicción', delito_otro: '', medidas: 'Personal: Comparecencia simple', medidas_otro: '', resultado: 'Principio de oportunidad', resultado_otro: '' },
-        { n_caso: '506014505-2026-1413-0', detenidos: '2', agraviado: '1', delito: 'Hurto agravado', delito_otro: '', medidas: 'Personal: Comparecencia con restricciones', medidas_otro: '', resultado: 'Incoación de proceso inmediato', resultado_otro: '' },
-        { n_caso: '506014505-2026-1414-0', detenidos: '0', agraviado: '1', delito: 'Apropiación ilícita', delito_otro: '', medidas: 'Real: Incautación', medidas_otro: '', resultado: 'Ampliación de investigación preliminar o de diligencias', resultado_otro: '' }
+        { n_caso: '506014505-2026-1412-0', detenidos: '1', agraviado: '1', delito: 'Conducción en estado de ebriedad o drogadicción (Art. 274 CP)', delito_otro: '', medidas: 'Personal: Comparecencia simple (Art. 286 CPP)', medidas_otro: '', resultado: 'Principio de oportunidad', resultado_otro: '' },
+        { n_caso: '506014505-2026-1413-0', detenidos: '2', agraviado: '1', delito: 'Hurto agravado (Art. 186 CP)', delito_otro: '', medidas: 'Personal: Comparecencia con restricciones (Art. 287 CPP)', medidas_otro: '', resultado: 'Incoación de proceso inmediato', resultado_otro: '' },
+        { n_caso: '506014505-2026-1414-0', detenidos: '0', agraviado: '1', delito: 'Apropiación ilícita común (Art. 190 CP)', delito_otro: '', medidas: 'Real: Incautación (Art. 316 CPP)', medidas_otro: '', resultado: 'Ampliación de investigación preliminar o de diligencias', resultado_otro: '' }
       ],
       audiencias: [
-        { carpeta: '506014505-2026-1413-0', exp_juzgado: 'Exp. 04122-2026 — 2° Juzgado de Flagrancia', tipo_audiencia: 'Incoación de proceso inmediato', tipo_audiencia_otro: '', resultado: 'Fundado', resultado_otro: '', observacion: 'Se dictó comparecencia con restricciones y se remitió a juicio inmediato.' }
+        { carpeta: '506014505-2026-1413-0', exp_juzgado: 'Exp. 04122-2026 — 2° Juzgado de Flagrancia', tipo_audiencia: 'Audiencia Única de Incoación de Proceso Inmediato (Art. 447 CPP)', tipo_audiencia_otro: '', resultado: 'Fundado', resultado_otro: '', observacion: 'Se dictó comparecencia con restricciones y se remitió a juicio inmediato.' }
       ],
       conclusiones: [
         'El turno fiscal se desarrolló con normalidad y dentro de los plazos establecidos por ley, resolviéndose la situación jurídica del 100% de los detenidos.',
