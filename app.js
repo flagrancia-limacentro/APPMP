@@ -1603,6 +1603,11 @@
         state[t.getAttribute('data-bind-check')] = t.checked;
         saveDraft();
         renderPreview();
+      } else if (t.hasAttribute('data-bind') && t.tagName === 'SELECT') {
+        state[t.getAttribute('data-bind')] = t.value;
+        saveDraft();
+        renderPreview();
+        updateProgress();
       } else if (t.hasAttribute('data-arr') && t.tagName === 'SELECT') {
         const arr = t.getAttribute('data-arr');
         const idx = Number(t.getAttribute('data-idx'));
