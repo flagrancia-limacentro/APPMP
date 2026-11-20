@@ -223,7 +223,6 @@
       delitos_mayor_incidencia: '',
 
       inc_personal: 'Sin incidencias',
-      inc_flagrancia_turno: 'Sin incidencias',
       inc_interinstitucional: 'Sin incidencias',
       inc_comunicaciones_carpetas: 'Sin incidencias',
       inc_logistica: 'Sin incidencias',
@@ -778,7 +777,6 @@
 
       <div class="doc-section-title">5. INCIDENCIAS Y PROBLEMÁTICA IDENTIFICADA</div>
       <p class="doc-p">• <strong>Personal y recursos del despacho:</strong> ${escapeHtml(state.inc_personal)}</p>
-      <p class="doc-p">• <strong>Coordinación con la Unidad de Flagrancia y con otras fiscalías de turno:</strong> ${escapeHtml(state.inc_flagrancia_turno)}</p>
       <p class="doc-p">• <strong>Coordinación interinstitucional (PNP, Poder Judicial, Medicina Legal u otras):</strong> ${escapeHtml(state.inc_interinstitucional)}</p>
       <p class="doc-p">• <strong>Recepción de comunicaciones, actas y remisión de carpetas fiscales:</strong> ${escapeHtml(state.inc_comunicaciones_carpetas)}</p>
       <p class="doc-p">• <strong>Aspectos logísticos, de infraestructura o de sistemas:</strong> ${escapeHtml(state.inc_logistica)}</p>
@@ -1177,11 +1175,15 @@
     const pLevant = findChildPara('4.4 Levantamientos de cadáver');
     const pDerivados = findChildPara('5. CASOS DERIVADOS');
     const pIncidencias = findChildPara('6. INCIDENCIAS');
+    const pIncFlagrancia = findChildPara('Coordinación con la Unidad de Flagrancia');
 
     // Eliminar secciones tachadas: 4.2, 4.4, 5
     [pCasosAnt, tables[6], pLevant, tables[8], pDerivados, tables[9]].forEach((node) => {
       if (node && node.parentNode === body) body.removeChild(node);
     });
+
+    // Eliminar rubro de incidencias "Coordinación con la Unidad de Flagrancia y con otras fiscalías de turno"
+    if (pIncFlagrancia && pIncFlagrancia.parentNode === body) body.removeChild(pIncFlagrancia);
 
     // Renumerar títulos en Word
     if (pDetalle) replaceInNode(pDetalle, { '4. DETALLE DE CASOS': '3. DETALLE DE CASOS' });
@@ -1306,7 +1308,6 @@
       '{{delitos_mayor_incidencia}}': state.delitos_mayor_incidencia,
 
       '{{inc_personal}}': state.inc_personal,
-      '{{inc_flagrancia_turno}}': state.inc_flagrancia_turno,
       '{{inc_interinstitucional}}': state.inc_interinstitucional,
       '{{inc_comunicaciones_carpetas}}': state.inc_comunicaciones_carpetas,
       '{{inc_logistica}}': state.inc_logistica,
@@ -1727,7 +1728,7 @@
     });
 
     $('#btnSinIncidencias').addEventListener('click', () => {
-      ['inc_personal','inc_flagrancia_turno','inc_interinstitucional','inc_comunicaciones_carpetas','inc_logistica','inc_otras']
+      ['inc_personal','inc_interinstitucional','inc_comunicaciones_carpetas','inc_logistica','inc_otras']
         .forEach((k) => { if (!String(state[k] || '').trim()) state[k] = 'Sin incidencias'; });
       saveDraft();
       syncInputsFromState();
