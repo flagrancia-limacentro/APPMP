@@ -158,26 +158,25 @@
       n_caso: '',
       detenidos: '0',
       agraviado: '1',
-      medidas: 'Ninguna',
-      medidas_otro: '',
       // Cada caso puede contener varios delitos, y cada delito puede tener
-      // un resultado distinto (incoado, derivado, archivado, ampliado, etc.).
+      // su propia medida coercitiva y un resultado distinto (incoado,
+      // derivado, archivado, ampliado, etc.).
       delitos: [newDelitoRow()],
       ...over
     };
   }
 
   function newDelitoRow(over = {}) {
-    return { nombre: '', otro: '', resultado: '', resultado_otro: '', ...over };
+    return { nombre: '', otro: '', medidas: 'Ninguna', medidas_otro: '', resultado: '', resultado_otro: '', ...over };
   }
 
-  // Convierte borradores antiguos (un solo delito/resultado por caso) al
-  // modelo de lista de delitos por caso.
+  // Convierte borradores antiguos (un solo delito, medida y resultado por
+  // caso) al modelo de lista de delitos por caso.
   function normalizeCaseRow(row) {
     const base = newCasoRow();
     const merged = { ...base, ...(row || {}) };
     // Solo se toma delitos si el origen realmente lo trae (modelo nuevo);
-    // si no, se migra el delito/resultado únicos del modelo anterior.
+    // si no, se migra el delito/medida/resultado únicos del modelo anterior.
     let delitos = row && Array.isArray(row.delitos) ? row.delitos : null;
     if (!delitos || delitos.length === 0) {
       const viejoDelito = String(row?.delito || '').trim();
@@ -187,18 +186,35 @@
       delitos = [newDelitoRow({
         nombre: viejoDelito,
         otro: viejoOtro,
+        medidas: row?.medidas || 'Ninguna',
+        medidas_otro: row?.medidas_otro || '',
         resultado: viejoResultado,
         resultado_otro: viejoResultadoOtro
       })];
+    } else {
+      // Modelo con delitos, pero con medidas todavía a nivel de caso.
+      const medCaso = String(row?.medidas || '').trim();
+      const medOtroCaso = String(row?.medidas_otro || '').trim();
+      if (medCaso || medOtroCaso) {
+        delitos = delitos.map((d) => ({
+          ...d,
+          medidas: (d?.medidas || '') || medCaso || 'Ninguna',
+          medidas_otro: (d?.medidas_otro || '') || medOtroCaso
+        }));
+      }
     }
     merged.delitos = delitos.map((d) => newDelitoRow({
       nombre: d?.nombre || '',
       otro: d?.otro || '',
+      medidas: d?.medidas || 'Ninguna',
+      medidas_otro: d?.medidas_otro || '',
       resultado: d?.resultado || '',
       resultado_otro: d?.resultado_otro || ''
     }));
     delete merged.delito;
     delete merged.delito_otro;
+    delete merged.medidas;
+    delete merged.medidas_otro;
     delete merged.resultado;
     delete merged.resultado_otro;
     return merged;
@@ -341,15 +357,15 @@
         { nombre: 'Dr. Luis Miguel Salazar Cruz', cargo: 'Fiscal Adjunto Provincial', origen: 'Pool de Fiscales PJFS', horario: '14:00 - 22:00', observacion: 'Apoyo en diligencias preliminares y audiencias' }
       ],
       casosIngresados: [
-        { n_caso: '506014505-2026-1412-0', detenidos: '1', agraviado: '1', medidas: 'Personal: Comparecencia simple (Art. 286 CPP)', medidas_otro: '',
-          delitos: [{ nombre: 'Conducción en estado de ebriedad o drogadicción (Art. 274 CP)', otro: '', resultado: 'Principio de oportunidad', resultado_otro: '' }] },
-        { n_caso: '506014505-2026-1413-0', detenidos: '2', agraviado: '1', medidas: 'Personal: Comparecencia con restricciones (Art. 287 CPP)', medidas_otro: '',
+        { n_caso: '506014505-2026-1412-0', detenidos: '1', agraviado: '1',
+          delitos: [{ nombre: 'Conducción en estado de ebriedad o drogadicción (Art. 274 CP)', otro: '', medidas: 'Personal: Comparecencia simple (Art. 286 CPP)', medidas_otro: '', resultado: 'Principio de oportunidad', resultado_otro: '' }] },
+        { n_caso: '506014505-2026-1413-0', detenidos: '2', agraviado: '1',
           delitos: [
-            { nombre: 'Hurto agravado (Art. 186 CP)', otro: '', resultado: 'Incoación de proceso inmediato', resultado_otro: '' },
-            { nombre: 'Tenencia o porte ilegal de armas de fuego, municiones o explosivos (Art. 279-G CP)', otro: '', resultado: 'Derivación a otro despacho', resultado_otro: '' }
+            { nombre: 'Hurto agravado (Art. 186 CP)', otro: '', medidas: 'Personal: Comparecencia con restricciones (Art. 287 CPP)', medidas_otro: '', resultado: 'Incoación de proceso inmediato', resultado_otro: '' },
+            { nombre: 'Tenencia o porte ilegal de armas de fuego, municiones o explosivos (Art. 279-G CP)', otro: '', medidas: 'Real: Incautación (Art. 316 CPP)', medidas_otro: '', resultado: 'Derivación a otro despacho', resultado_otro: '' }
           ] },
-        { n_caso: '506014505-2026-1414-0', detenidos: '0', agraviado: '1', medidas: 'Real: Incautación (Art. 316 CPP)', medidas_otro: '',
-          delitos: [{ nombre: 'Apropiación ilícita común (Art. 190 CP)', otro: '', resultado: 'Ampliación de investigación preliminar o de diligencias', resultado_otro: '' }] }
+        { n_caso: '506014505-2026-1414-0', detenidos: '0', agraviado: '1',
+          delitos: [{ nombre: 'Apropiación ilícita común (Art. 190 CP)', otro: '', medidas: 'Ninguna', medidas_otro: '', resultado: 'Ampliación de investigación preliminar o de diligencias', resultado_otro: '' }] }
       ],
       audiencias: [
         { carpeta: '506014505-2026-1413-0', exp_juzgado: 'Exp. 04122-2026 — 2° Juzgado de Flagrancia', tipo_audiencia: 'Audiencia Única de Incoación de Proceso Inmediato (Art. 447 CPP)', tipo_audiencia_otro: '', resultado: 'Fundado', resultado_otro: '', observacion: 'Se dictó comparecencia con restricciones y se remitió a juicio inmediato.' }
@@ -518,6 +534,8 @@
     return list.map((d) => ({
       nombre: String(d?.nombre || ''),
       otro: String(d?.otro || ''),
+      medidas: String(d?.medidas || ''),
+      medidas_otro: String(d?.medidas_otro || ''),
       resultado: String(d?.resultado || ''),
       resultado_otro: String(d?.resultado_otro || '')
     }));
@@ -539,6 +557,15 @@
       return custom ? `Otro: ${custom}` : 'Otro';
     }
     return res;
+  }
+
+  function getMedidaDisplay(d) {
+    const med = String(d?.medidas || '').trim();
+    if (med === 'Otro') {
+      const custom = String(d?.medidas_otro || '').trim();
+      return custom ? `Otro: ${custom}` : 'Otro';
+    }
+    return med;
   }
 
   const letrasDelito = (i) => String.fromCharCode(97 + (i % 26));
@@ -589,6 +616,28 @@
       .join('\n');
   }
 
+  function buildMedidasCellHtml(caso) {
+    const items = getDelitosRows(caso);
+    const lines = items.map((d, i) => {
+      const label = items.length > 1 ? `<strong>${letrasDelito(i)})</strong> ` : '';
+      const txt = getMedidaDisplay(d);
+      return txt ? `${label}${escapeHtml(txt)}` : '';
+    }).filter(Boolean);
+    return lines.join('<br/>');
+  }
+
+  function buildMedidasCellText(caso) {
+    const items = getDelitosRows(caso);
+    return items
+      .map((d, i) => {
+        const txt = getMedidaDisplay(d);
+        if (!txt) return '';
+        return items.length > 1 ? `${letrasDelito(i)}) ${txt}` : txt;
+      })
+      .filter(Boolean)
+      .join('\n');
+  }
+
   function recalculateStatsFromCases(syncDom = true) {
     const casos = state.casosIngresados || [];
     let conDet = 0;
@@ -631,18 +680,8 @@
       if (detN > 0) conDet++;
       else sinDet++;
 
-      const med = String(c.medidas || '').trim();
-      if (med.includes('Prisión preventiva')) medCounts.med_prision_preventiva++;
-      else if (med.includes('Detención preliminar')) medCounts.med_detencion_preliminar++;
-      else if (med.includes('Comparecencia con restricciones')) medCounts.med_comparecencia_restricciones++;
-      else if (med.includes('Comparecencia simple')) medCounts.med_comparecencia_simple++;
-      else if (med.includes('Impedimento de salida')) medCounts.med_impedimento_salida++;
-      else if (med.includes('Incautación')) medCounts.med_incautacion++;
-      else if (med.includes('Embargo')) medCounts.med_embargo++;
-      else if (med && med !== 'Ninguna') medCounts.med_otras++;
-
-      // Los resultados y los delitos se cuentan por delito: un mismo caso
-      // puede tener un delito incoado y otro derivado, archivado, etc.
+      // Los resultados, las medidas y los delitos se cuentan por delito: un
+      // mismo caso puede tener un delito incoado y otro derivado o archivado.
       getDelitosRows(c).forEach((d) => {
         const res = String(d.resultado || '').trim();
         if (res && resMap[res]) {
@@ -652,6 +691,16 @@
           const detalle = String(d.resultado_otro || '').trim();
           if (detalle) resOtrosDetalles.push(detalle);
         }
+
+        const med = String(d.medidas || '').trim();
+        if (med.includes('Prisión preventiva')) medCounts.med_prision_preventiva++;
+        else if (med.includes('Detención preliminar')) medCounts.med_detencion_preliminar++;
+        else if (med.includes('Comparecencia con restricciones')) medCounts.med_comparecencia_restricciones++;
+        else if (med.includes('Comparecencia simple')) medCounts.med_comparecencia_simple++;
+        else if (med.includes('Impedimento de salida')) medCounts.med_impedimento_salida++;
+        else if (med.includes('Incautación')) medCounts.med_incautacion++;
+        else if (med.includes('Embargo')) medCounts.med_embargo++;
+        else if (med && med !== 'Ninguna') medCounts.med_otras++;
 
         const delName = getDelitoDisplay(d);
         if (delName) delitoFreq[delName] = (delitoFreq[delName] || 0) + 1;
@@ -749,7 +798,7 @@
     if (!tbody) return;
     const rows = state.casosIngresados || [];
     if (rows.length === 0) {
-      tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;color:#64748b;padding:12px;">Sin registros. Haga clic en "+ Agregar caso" para añadir uno.</td></tr>';
+      tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:#64748b;padding:12px;">Sin registros. Haga clic en "+ Agregar caso" para añadir uno.</td></tr>';
       return;
     }
 
@@ -770,11 +819,13 @@
       const delitoCells = delitos.map((d, di) => {
         const prefijo = nDel > 1 ? `<span class="dyn-delito-letra">${letrasDelito(di)})</span>` : '';
         const delSel = selectHtml('casosIngresados', ci, di, 'nombre', DELITOS_FLAGRANCIA, d.nombre, d.otro, 'otro');
+        const medSel = selectHtml('casosIngresados', ci, di, 'medidas', MEDIDAS_COERCITIVAS, d.medidas, d.medidas_otro, 'medidas_otro');
         const resSel = selectHtml('casosIngresados', ci, di, 'resultado', RESULTADOS_CASO, d.resultado, d.resultado_otro, 'resultado_otro');
         return `<div class="dyn-delito-item">
           ${prefijo}
           <div class="dyn-delito-fields">
             <label>Delito</label>${delSel}
+            <label>Medida coercitiva</label>${medSel}
             <label>Resultado de este delito</label>${resSel}
           </div>
           ${nDel > 1 ? `<button type="button" class="btn btn-danger-soft btn-sm dyn-delito-del" data-del-delito="${ci}" data-di="${di}" title="Quitar este delito">✕</button>` : ''}
@@ -789,7 +840,6 @@
         <td class="dyn-delitos-cell">${delitoCells}
           <button type="button" class="btn btn-outline btn-sm dyn-add-delito" data-add-delito="${ci}">+ Agregar delito</button>
         </td>
-        <td>${selectHtml('casosIngresados', ci, null, 'medidas', MEDIDAS_COERCITIVAS, row.medidas, row.medidas_otro, 'medidas_otro')}</td>
         <td><button type="button" class="btn btn-danger-soft btn-sm" data-del-arr="casosIngresados" data-idx="${ci}" title="Eliminar caso">✕</button></td>
       </tr>`;
     }).join('');
@@ -851,7 +901,7 @@
           <td>${escapeHtml(r.detenidos || '0')}</td>
           <td>${escapeHtml(r.agraviado || '0')}</td>
           <td>${delitoHtml}</td>
-          <td>${escapeHtml(getDisplayVal(r, 'medidas'))}</td>
+          <td>${buildMedidasCellHtml(r)}</td>
           <td>${resultadoHtml}</td>
         </tr>`;
       }).join('');
@@ -928,7 +978,7 @@
       <div class="doc-section-title">3. DETALLE DE CASOS</div>
       <div class="doc-subsection-title">3.1 Casos ingresados durante el turno</div>
       <table class="doc-table">
-        <thead><tr><th>N°</th><th>Carpeta fiscal / caso</th><th>Detenido(s) (N)</th><th>Agraviado (N)</th><th>Delito(s)</th><th>Medidas coercitivas</th><th>Resultado por delito</th></tr></thead>
+        <thead><tr><th>N°</th><th>Carpeta fiscal / caso</th><th>Detenido(s) (N)</th><th>Agraviado (N)</th><th>Delito(s)</th><th>Medida coercitiva por delito</th><th>Resultado por delito</th></tr></thead>
         <tbody>
           ${renderCasosHtml()}
           <tr><td colspan="6" style="font-weight:700;text-align:right;">Total de detenidos del turno</td><td style="font-weight:700;text-align:center;">${escapeHtml(state.total_detenidos)}</td></tr>
@@ -1345,7 +1395,7 @@
         replaceInNode(headerRow, {
           'Detenido(s)': 'Detenido(s) (N)',
           'Agraviado': 'Agraviado (N)',
-          'Diligencias realizadas': 'Medidas coercitivas',
+          'Diligencias realizadas': 'Medida coercitiva por delito',
           'Delito': 'Delito(s)',
           'Resultado y estado actual': 'Resultado por delito'
         });
@@ -1356,7 +1406,7 @@
       '{{detenidos}}': r.detenidos || '0',
       '{{agraviado}}': r.agraviado || '0',
       '{{delito}}': buildDelitosCellText(r),
-      '{{diligencias}}': getDisplayVal(r, 'medidas'),
+      '{{diligencias}}': buildMedidasCellText(r),
       '{{resultado}}': buildResultadosCellText(r)
     }), 1);
 
@@ -1964,16 +2014,17 @@
           const startIdx = first.includes('carpeta') || first.includes('caso') || first.includes('n°') ? 1 : 0;
           const imported = rows.slice(startIdx).map((cols) => {
             const delitoTxt = cols[3] || '';
+            const medTxt = cols[4] || '';
             const resultTxt = cols[5] || '';
             return newCasoRow({
               n_caso: cols[0] || '',
               detenidos: String(parseInt(cols[1], 10) || 0),
               agraviado: String(parseInt(cols[2], 10) || 1),
-              medidas: MEDIDAS_COERCITIVAS.includes(cols[4]) ? cols[4] : (cols[4] ? 'Otro' : 'Ninguna'),
-              medidas_otro: MEDIDAS_COERCITIVAS.includes(cols[4]) ? '' : (cols[4] || ''),
               delitos: [newDelitoRow({
                 nombre: DELITOS_FLAGRANCIA.includes(delitoTxt) ? delitoTxt : (delitoTxt ? 'Otro' : ''),
                 otro: DELITOS_FLAGRANCIA.includes(delitoTxt) ? '' : delitoTxt,
+                medidas: MEDIDAS_COERCITIVAS.includes(medTxt) ? medTxt : (medTxt ? 'Otro' : 'Ninguna'),
+                medidas_otro: MEDIDAS_COERCITIVAS.includes(medTxt) ? '' : medTxt,
                 resultado: RESULTADOS_CASO.includes(resultTxt) ? resultTxt : (resultTxt ? 'Otro' : ''),
                 resultado_otro: RESULTADOS_CASO.includes(resultTxt) ? '' : resultTxt
               })]

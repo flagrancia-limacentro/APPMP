@@ -991,7 +991,7 @@ html, body {
 
 /* Subregistros de delitos dentro de un caso (Sección 3.1) */
 .dyn-delitos-cell {
-  min-width: 320px;
+  min-width: 460px;
 }
 
 .dyn-delito-item {
