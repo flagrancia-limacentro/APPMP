@@ -153,6 +153,65 @@
     'Otro'
   ];
 
+  function newCasoRow(over = {}) {
+    return {
+      n_caso: '',
+      detenidos: '0',
+      agraviado: '1',
+      medidas: 'Ninguna',
+      medidas_otro: '',
+      // Cada caso puede contener varios delitos, y cada delito puede tener
+      // un resultado distinto (incoado, derivado, archivado, ampliado, etc.).
+      delitos: [newDelitoRow()],
+      ...over
+    };
+  }
+
+  function newDelitoRow(over = {}) {
+    return { nombre: '', otro: '', resultado: '', resultado_otro: '', ...over };
+  }
+
+  // Convierte borradores antiguos (un solo delito/resultado por caso) al
+  // modelo de lista de delitos por caso.
+  function normalizeCaseRow(row) {
+    const base = newCasoRow();
+    const merged = { ...base, ...(row || {}) };
+    // Solo se toma delitos si el origen realmente lo trae (modelo nuevo);
+    // si no, se migra el delito/resultado únicos del modelo anterior.
+    let delitos = row && Array.isArray(row.delitos) ? row.delitos : null;
+    if (!delitos || delitos.length === 0) {
+      const viejoDelito = String(row?.delito || '').trim();
+      const viejoOtro = String(row?.delito_otro || '').trim();
+      const viejoResultado = String(row?.resultado || '').trim();
+      const viejoResultadoOtro = String(row?.resultado_otro || '').trim();
+      delitos = [newDelitoRow({
+        nombre: viejoDelito,
+        otro: viejoOtro,
+        resultado: viejoResultado,
+        resultado_otro: viejoResultadoOtro
+      })];
+    }
+    merged.delitos = delitos.map((d) => newDelitoRow({
+      nombre: d?.nombre || '',
+      otro: d?.otro || '',
+      resultado: d?.resultado || '',
+      resultado_otro: d?.resultado_otro || ''
+    }));
+    delete merged.delito;
+    delete merged.delito_otro;
+    delete merged.resultado;
+    delete merged.resultado_otro;
+    return merged;
+  }
+
+  function normalizeState(incoming) {
+    const merged = { ...getDefaultState(), ...(incoming || {}) };
+    merged.casosIngresados = Array.isArray(merged.casosIngresados) && merged.casosIngresados.length
+      ? merged.casosIngresados.map(normalizeCaseRow)
+      : [newCasoRow()];
+    return merged;
+  }
+
   function getDefaultState() {
     const today = new Date();
     const meses = ['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
@@ -240,7 +299,7 @@
       copias_a: 'Coordinación Distrital de las Fiscalías Especializadas en Flagrancia Delictiva de Lima Centro / Archivo',
 
       personalApoyo: [{ nombre: '', cargo: '', origen: '', horario: '', observacion: '' }],
-      casosIngresados: [{ n_caso: '', detenidos: '0', agraviado: '1', delito: '', delito_otro: '', medidas: 'Ninguna', medidas_otro: '', resultado: '', resultado_otro: '' }],
+      casosIngresados: [newCasoRow()],
       audiencias: [{ carpeta: '', exp_juzgado: '', tipo_audiencia: '', tipo_audiencia_otro: '', resultado: '', resultado_otro: '', observacion: '' }],
       conclusiones: ['', ''],
       recomendaciones: ['', '']
@@ -282,9 +341,15 @@
         { nombre: 'Dr. Luis Miguel Salazar Cruz', cargo: 'Fiscal Adjunto Provincial', origen: 'Pool de Fiscales PJFS', horario: '14:00 - 22:00', observacion: 'Apoyo en diligencias preliminares y audiencias' }
       ],
       casosIngresados: [
-        { n_caso: '506014505-2026-1412-0', detenidos: '1', agraviado: '1', delito: 'Conducción en estado de ebriedad o drogadicción (Art. 274 CP)', delito_otro: '', medidas: 'Personal: Comparecencia simple (Art. 286 CPP)', medidas_otro: '', resultado: 'Principio de oportunidad', resultado_otro: '' },
-        { n_caso: '506014505-2026-1413-0', detenidos: '2', agraviado: '1', delito: 'Hurto agravado (Art. 186 CP)', delito_otro: '', medidas: 'Personal: Comparecencia con restricciones (Art. 287 CPP)', medidas_otro: '', resultado: 'Incoación de proceso inmediato', resultado_otro: '' },
-        { n_caso: '506014505-2026-1414-0', detenidos: '0', agraviado: '1', delito: 'Apropiación ilícita común (Art. 190 CP)', delito_otro: '', medidas: 'Real: Incautación (Art. 316 CPP)', medidas_otro: '', resultado: 'Ampliación de investigación preliminar o de diligencias', resultado_otro: '' }
+        { n_caso: '506014505-2026-1412-0', detenidos: '1', agraviado: '1', medidas: 'Personal: Comparecencia simple (Art. 286 CPP)', medidas_otro: '',
+          delitos: [{ nombre: 'Conducción en estado de ebriedad o drogadicción (Art. 274 CP)', otro: '', resultado: 'Principio de oportunidad', resultado_otro: '' }] },
+        { n_caso: '506014505-2026-1413-0', detenidos: '2', agraviado: '1', medidas: 'Personal: Comparecencia con restricciones (Art. 287 CPP)', medidas_otro: '',
+          delitos: [
+            { nombre: 'Hurto agravado (Art. 186 CP)', otro: '', resultado: 'Incoación de proceso inmediato', resultado_otro: '' },
+            { nombre: 'Tenencia o porte ilegal de armas de fuego, municiones o explosivos (Art. 279-G CP)', otro: '', resultado: 'Derivación a otro despacho', resultado_otro: '' }
+          ] },
+        { n_caso: '506014505-2026-1414-0', detenidos: '0', agraviado: '1', medidas: 'Real: Incautación (Art. 316 CPP)', medidas_otro: '',
+          delitos: [{ nombre: 'Apropiación ilícita común (Art. 190 CP)', otro: '', resultado: 'Ampliación de investigación preliminar o de diligencias', resultado_otro: '' }] }
       ],
       audiencias: [
         { carpeta: '506014505-2026-1413-0', exp_juzgado: 'Exp. 04122-2026 — 2° Juzgado de Flagrancia', tipo_audiencia: 'Audiencia Única de Incoación de Proceso Inmediato (Art. 447 CPP)', tipo_audiencia_otro: '', resultado: 'Fundado', resultado_otro: '', observacion: 'Se dictó comparecencia con restricciones y se remitió a juicio inmediato.' }
@@ -446,6 +511,84 @@
     return v;
   }
 
+  // Devuelve los delitos de un caso, saneados (siempre al menos uno).
+  function getDelitosRows(caso) {
+    const list = Array.isArray(caso?.delitos) ? caso.delitos : [];
+    if (!list.length) return [newDelitoRow()];
+    return list.map((d) => ({
+      nombre: String(d?.nombre || ''),
+      otro: String(d?.otro || ''),
+      resultado: String(d?.resultado || ''),
+      resultado_otro: String(d?.resultado_otro || '')
+    }));
+  }
+
+  function getDelitoDisplay(d) {
+    const nombre = String(d?.nombre || '').trim();
+    if (nombre === 'Otro') {
+      const custom = String(d?.otro || '').trim();
+      return custom ? `Otro: ${custom}` : 'Otro';
+    }
+    return nombre;
+  }
+
+  function getResultadoDisplay(d) {
+    const res = String(d?.resultado || '').trim();
+    if (res === 'Otro') {
+      const custom = String(d?.resultado_otro || '').trim();
+      return custom ? `Otro: ${custom}` : 'Otro';
+    }
+    return res;
+  }
+
+  const letrasDelito = (i) => String.fromCharCode(97 + (i % 26));
+
+  // Texto para las celdas Delito / Resultado: "a) ... <br> b) ..."
+  function buildDelitosCellHtml(caso) {
+    const items = getDelitosRows(caso);
+    const lines = items.map((d, i) => {
+      const label = items.length > 1 ? `<strong>${letrasDelito(i)})</strong> ` : '';
+      const txt = getDelitoDisplay(d);
+      return txt ? `${label}${escapeHtml(txt)}` : '';
+    }).filter(Boolean);
+    return lines.join('<br/>');
+  }
+
+  function buildResultadosCellHtml(caso) {
+    const items = getDelitosRows(caso);
+    const lines = items.map((d, i) => {
+      const label = items.length > 1 ? `<strong>${letrasDelito(i)})</strong> ` : '';
+      const txt = getResultadoDisplay(d);
+      return txt ? `${label}${escapeHtml(txt)}` : '';
+    }).filter(Boolean);
+    return lines.join('<br/>');
+  }
+
+  // Equivalentes en texto plano, para el Word (.docx).
+  function buildDelitosCellText(caso) {
+    const items = getDelitosRows(caso);
+    return items
+      .map((d, i) => {
+        const txt = getDelitoDisplay(d);
+        if (!txt) return '';
+        return items.length > 1 ? `${letrasDelito(i)}) ${txt}` : txt;
+      })
+      .filter(Boolean)
+      .join('\n');
+  }
+
+  function buildResultadosCellText(caso) {
+    const items = getDelitosRows(caso);
+    return items
+      .map((d, i) => {
+        const txt = getResultadoDisplay(d);
+        if (!txt) return '';
+        return items.length > 1 ? `${letrasDelito(i)}) ${txt}` : txt;
+      })
+      .filter(Boolean)
+      .join('\n');
+  }
+
   function recalculateStatsFromCases(syncDom = true) {
     const casos = state.casosIngresados || [];
     let conDet = 0;
@@ -488,14 +631,6 @@
       if (detN > 0) conDet++;
       else sinDet++;
 
-      const res = String(c.resultado || '').trim();
-      if (res && resMap[res]) {
-        resCounts[resMap[res]]++;
-      } else if (res === 'Otro') {
-        resOtros++;
-        if (c.resultado_otro) resOtrosDetalles.push(c.resultado_otro.trim());
-      }
-
       const med = String(c.medidas || '').trim();
       if (med.includes('Prisión preventiva')) medCounts.med_prision_preventiva++;
       else if (med.includes('Detención preliminar')) medCounts.med_detencion_preliminar++;
@@ -506,8 +641,21 @@
       else if (med.includes('Embargo')) medCounts.med_embargo++;
       else if (med && med !== 'Ninguna') medCounts.med_otras++;
 
-      const delName = getDisplayVal(c, 'delito');
-      if (delName) delitoFreq[delName] = (delitoFreq[delName] || 0) + 1;
+      // Los resultados y los delitos se cuentan por delito: un mismo caso
+      // puede tener un delito incoado y otro derivado, archivado, etc.
+      getDelitosRows(c).forEach((d) => {
+        const res = String(d.resultado || '').trim();
+        if (res && resMap[res]) {
+          resCounts[resMap[res]]++;
+        } else if (res === 'Otro') {
+          resOtros++;
+          const detalle = String(d.resultado_otro || '').trim();
+          if (detalle) resOtrosDetalles.push(detalle);
+        }
+
+        const delName = getDelitoDisplay(d);
+        if (delName) delitoFreq[delName] = (delitoFreq[delName] || 0) + 1;
+      });
     });
 
     state.total_casos = String(casos.length);
@@ -543,14 +691,7 @@
       { key: 'horario', ph: 'Ej. 08:00-16:00' },
       { key: 'observacion', ph: 'Observaciones' }
     ]);
-    renderTable('tbodyCasosIngresados', 'casosIngresados', [
-      { key: 'n_caso', ph: 'Ej. 20-2026' },
-      { key: 'detenidos', type: 'number', ph: '0' },
-      { key: 'agraviado', type: 'number', ph: '1' },
-      { key: 'delito', type: 'select', options: DELITOS_FLAGRANCIA, allowOther: true },
-      { key: 'medidas', type: 'select', options: MEDIDAS_COERCITIVAS, allowOther: true },
-      { key: 'resultado', type: 'select', options: RESULTADOS_CASO, allowOther: true }
-    ]);
+    renderCasosTable();
     renderTable('tbodyAudiencias', 'audiencias', [
       { key: 'carpeta', ph: 'Ej. 20-2026' },
       { key: 'exp_juzgado', ph: 'Exp. y juzgado' },
@@ -603,6 +744,57 @@
       .join('');
   }
 
+  function renderCasosTable() {
+    const tbody = document.getElementById('tbodyCasosIngresados');
+    if (!tbody) return;
+    const rows = state.casosIngresados || [];
+    if (rows.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;color:#64748b;padding:12px;">Sin registros. Haga clic en "+ Agregar caso" para añadir uno.</td></tr>';
+      return;
+    }
+
+    const selectHtml = (arr, ci, di, col, options, rawVal, otherVal, otherCol) => {
+      const diAttr = di === null || di === undefined ? '' : ` data-di="${di}"`;
+      const opts = ['<option value="">-- Seleccione --</option>',
+        ...options.map((opt) => `<option value="${escapeHtml(opt)}" ${rawVal === opt ? 'selected' : ''}>${escapeHtml(opt)}</option>`)
+      ].join('');
+      const other = rawVal === 'Otro'
+        ? `<input type="text" class="dyn-other-input" data-arr="${arr}" data-idx="${ci}"${diAttr} data-col="${otherCol}" value="${escapeHtml(otherVal || '')}" placeholder="Especifique..." />`
+        : '';
+      return `<select data-arr="${arr}" data-idx="${ci}"${diAttr} data-col="${col}">${opts}</select>${other}`;
+    };
+
+    tbody.innerHTML = rows.map((row, ci) => {
+      const delitos = getDelitosRows(row);
+      const nDel = delitos.length;
+      const delitoCells = delitos.map((d, di) => {
+        const prefijo = nDel > 1 ? `<span class="dyn-delito-letra">${letrasDelito(di)})</span>` : '';
+        const delSel = selectHtml('casosIngresados', ci, di, 'nombre', DELITOS_FLAGRANCIA, d.nombre, d.otro, 'otro');
+        const resSel = selectHtml('casosIngresados', ci, di, 'resultado', RESULTADOS_CASO, d.resultado, d.resultado_otro, 'resultado_otro');
+        return `<div class="dyn-delito-item">
+          ${prefijo}
+          <div class="dyn-delito-fields">
+            <label>Delito</label>${delSel}
+            <label>Resultado de este delito</label>${resSel}
+          </div>
+          ${nDel > 1 ? `<button type="button" class="btn btn-danger-soft btn-sm dyn-delito-del" data-del-delito="${ci}" data-di="${di}" title="Quitar este delito">✕</button>` : ''}
+        </div>`;
+      }).join('');
+
+      return `<tr>
+        <td style="text-align:center;font-weight:700;color:#475569;">${ci + 1}</td>
+        <td><input type="text" data-arr="casosIngresados" data-idx="${ci}" data-col="n_caso" value="${escapeHtml(row.n_caso || '')}" placeholder="Ej. 20-2026" /></td>
+        <td><input type="number" min="0" data-arr="casosIngresados" data-idx="${ci}" data-col="detenidos" value="${escapeHtml(row.detenidos || '0')}" placeholder="0" /></td>
+        <td><input type="number" min="0" data-arr="casosIngresados" data-idx="${ci}" data-col="agraviado" value="${escapeHtml(row.agraviado || '1')}" placeholder="1" /></td>
+        <td class="dyn-delitos-cell">${delitoCells}
+          <button type="button" class="btn btn-outline btn-sm dyn-add-delito" data-add-delito="${ci}">+ Agregar delito</button>
+        </td>
+        <td>${selectHtml('casosIngresados', ci, null, 'medidas', MEDIDAS_COERCITIVAS, row.medidas, row.medidas_otro, 'medidas_otro')}</td>
+        <td><button type="button" class="btn btn-danger-soft btn-sm" data-del-arr="casosIngresados" data-idx="${ci}" title="Eliminar caso">✕</button></td>
+      </tr>`;
+    }).join('');
+  }
+
   function renderConclusionsAndRecs() {
     const renderList = (containerId, arrKey, prefix, label) => {
       const box = document.getElementById(containerId);
@@ -643,6 +835,26 @@
               .join('')}</tr>`
         )
         .join('');
+    };
+
+    const renderCasosHtml = () => {
+      const arr = state.casosIngresados || [];
+      if (!arr.length) {
+        return '<tr><td colspan="7" style="text-align:center;font-style:italic;color:#64748b;">Sin casos ingresados</td></tr>';
+      }
+      return arr.map((r, i) => {
+        const delitoHtml = buildDelitosCellHtml(r) || '';
+        const resultadoHtml = buildResultadosCellHtml(r) || '';
+        return `<tr>
+          <td style="text-align:center;">${i + 1}</td>
+          <td>${escapeHtml(r.n_caso || '')}</td>
+          <td>${escapeHtml(r.detenidos || '0')}</td>
+          <td>${escapeHtml(r.agraviado || '0')}</td>
+          <td>${delitoHtml}</td>
+          <td>${escapeHtml(getDisplayVal(r, 'medidas'))}</td>
+          <td>${resultadoHtml}</td>
+        </tr>`;
+      }).join('');
     };
 
     const conHtml = (state.conclusiones || [])
@@ -716,9 +928,9 @@
       <div class="doc-section-title">3. DETALLE DE CASOS</div>
       <div class="doc-subsection-title">3.1 Casos ingresados durante el turno</div>
       <table class="doc-table">
-        <thead><tr><th>N°</th><th>Carpeta fiscal / caso</th><th>Detenido(s) (N)</th><th>Agraviado (N)</th><th>Delito</th><th>Medidas coercitivas</th><th>Resultado y estado actual</th></tr></thead>
+        <thead><tr><th>N°</th><th>Carpeta fiscal / caso</th><th>Detenido(s) (N)</th><th>Agraviado (N)</th><th>Delito(s)</th><th>Medidas coercitivas</th><th>Resultado por delito</th></tr></thead>
         <tbody>
-          ${renderRowsHtml(state.casosIngresados, ['n_caso','detenidos','agraviado','delito','medidas','resultado'], 'Sin casos ingresados')}
+          ${renderCasosHtml()}
           <tr><td colspan="6" style="font-weight:700;text-align:right;">Total de detenidos del turno</td><td style="font-weight:700;text-align:center;">${escapeHtml(state.total_detenidos)}</td></tr>
         </tbody>
       </table>
@@ -982,9 +1194,9 @@
 
       const savedLocal = loadDraft(account);
       if (cloudDraft && cloudDraft.state_json) {
-        state = { ...getDefaultState(), ...cloudDraft.state_json };
+        state = normalizeState(cloudDraft.state_json);
       } else if (savedLocal && savedLocal.state) {
-        state = { ...getDefaultState(), ...savedLocal.state };
+        state = normalizeState(savedLocal.state);
       } else {
         state = getDefaultState();
         state.nombre_despacho_emisor = account.despacho;
@@ -1030,15 +1242,50 @@
 
     const getTextNodes = (node) => Array.from(node.getElementsByTagNameNS(W_NS, 't'));
 
+    // Inserta texto con saltos de línea reales de Word dentro de la celda,
+    // clonando el run original para conservar su formato.
+    const setTextWithBreaks = (tNode, value) => {
+      const parts = String(value ?? '').split('\n');
+      tNode.textContent = parts[0] ?? '';
+      if (parts.length === 1) return;
+      const doc = tNode.ownerDocument;
+      const run = tNode.parentNode;
+      if (!run || run.localName !== 'r') {
+        tNode.textContent = parts.join(' ');
+        return;
+      }
+      let ref = run;
+      for (let i = 1; i < parts.length; i++) {
+        const brRun = doc.createElementNS(W_NS, 'w:r');
+        const br = doc.createElementNS(W_NS, 'w:br');
+        brRun.appendChild(br);
+        ref.parentNode.insertBefore(brRun, ref.nextSibling);
+        ref = brRun;
+
+        const textRun = run.cloneNode(true);
+        const ts = Array.from(textRun.children).filter((n) => n.localName === 't');
+        if (!ts.length) continue;
+        ts[0].textContent = parts[i];
+        ts[0].setAttribute('xml:space', 'preserve');
+        for (let j = 1; j < ts.length; j++) ts[j].parentNode.removeChild(ts[j]);
+        ref.parentNode.insertBefore(textRun, ref.nextSibling);
+        ref = textRun;
+      }
+    };
+
     const replaceInNode = (node, map) => {
       for (const t of getTextNodes(node)) {
         let txt = t.textContent;
+        let conSalto = false;
         for (const [k, v] of Object.entries(map)) {
           if (txt.includes(k)) {
-            txt = txt.split(k).join(String(v ?? ''));
+            const reemplazo = String(v ?? '');
+            if (reemplazo.includes('\n')) conSalto = true;
+            txt = txt.split(k).join(reemplazo);
           }
         }
-        t.textContent = txt;
+        if (conSalto) setTextWithBreaks(t, txt);
+        else t.textContent = txt;
       }
     };
 
@@ -1091,19 +1338,26 @@
 
     // Tabla 3.1 (antes 4.1) Casos ingresados (index 5, keep last row "Total de detenidos del turno")
     if (tables[5]) {
-      replaceInNode(tables[5].children[0], {
-        'Detenido(s)': 'Detenido(s) (N)',
-        'Agraviado': 'Agraviado (N)',
-        'Diligencias realizadas': 'Medidas coercitivas'
-      });
+      // La fila de encabezado es la primera <w:tr> de la tabla (children[0]
+      // es <w:tblPr>), por eso se busca explícitamente.
+      const headerRow = Array.from(tables[5].children).find((n) => n.localName === 'tr');
+      if (headerRow) {
+        replaceInNode(headerRow, {
+          'Detenido(s)': 'Detenido(s) (N)',
+          'Agraviado': 'Agraviado (N)',
+          'Diligencias realizadas': 'Medidas coercitivas',
+          'Delito': 'Delito(s)',
+          'Resultado y estado actual': 'Resultado por delito'
+        });
+      }
     }
     populateDynamicTable(tables[5], state.casosIngresados, (r) => ({
       '{{n_caso}}': r.n_caso || '',
       '{{detenidos}}': r.detenidos || '0',
       '{{agraviado}}': r.agraviado || '0',
-      '{{delito}}': getDisplayVal(r, 'delito'),
+      '{{delito}}': buildDelitosCellText(r),
       '{{diligencias}}': getDisplayVal(r, 'medidas'),
-      '{{resultado}}': getDisplayVal(r, 'resultado')
+      '{{resultado}}': buildResultadosCellText(r)
     }), 1);
 
     // Tabla 3.2 (antes 4.3) Audiencias (index 7)
@@ -1364,7 +1618,7 @@
   }
 
   // ================= EVENTOS =================
-  document.addEventListener('DOMContentLoaded', async () => {
+  const onReady = async () => {
     const togglePwd = $('#btnTogglePwd');
     if (togglePwd) {
       togglePwd.addEventListener('click', () => {
@@ -1501,7 +1755,7 @@
           .order('updated_at', { ascending: false })
           .limit(1);
         if (rows && rows.length && rows[0].state_json) {
-          state = { ...getDefaultState(), ...rows[0].state_json };
+          state = normalizeState(rows[0].state_json);
         } else {
           state = getDefaultState();
           state.nombre_despacho_emisor = prof.despacho;
@@ -1517,7 +1771,7 @@
         const idx = Number(viewSub.getAttribute('data-admin-view-sub'));
         const rec = adminInformesCache[idx];
         if (rec && rec.state_json) {
-          state = { ...getDefaultState(), ...rec.state_json };
+          state = normalizeState(rec.state_json);
           showEditorWorkspace();
           syncInputsFromState();
         }
@@ -1529,7 +1783,7 @@
         const rec = adminInformesCache[idx];
         if (rec && rec.state_json) {
           const prevState = state;
-          state = { ...getDefaultState(), ...rec.state_json };
+          state = normalizeState(rec.state_json);
           downloadDocx().finally(() => { state = prevState; });
         }
       }
@@ -1571,8 +1825,13 @@
       } else if (t.hasAttribute('data-arr')) {
         const arr = t.getAttribute('data-arr');
         const idx = Number(t.getAttribute('data-idx'));
+        const di = t.hasAttribute('data-di') ? Number(t.getAttribute('data-di')) : null;
         const col = t.getAttribute('data-col');
-        state[arr][idx][col] = t.value;
+        if (di !== null) {
+          state[arr][idx].delitos[di][col] = t.value;
+        } else {
+          state[arr][idx][col] = t.value;
+        }
         if (arr === 'casosIngresados') recalculateStatsFromCases(true);
         saveDraft();
         renderPreview();
@@ -1601,9 +1860,11 @@
       } else if (t.hasAttribute('data-arr') && t.tagName === 'SELECT') {
         const arr = t.getAttribute('data-arr');
         const idx = Number(t.getAttribute('data-idx'));
+        const di = t.hasAttribute('data-di') ? Number(t.getAttribute('data-di')) : null;
         const col = t.getAttribute('data-col');
-        state[arr][idx][col] = t.value;
-        if (t.value !== 'Otro') state[arr][idx][col + '_otro'] = '';
+        const holder = di !== null ? state[arr][idx].delitos[di] : state[arr][idx];
+        holder[col] = t.value;
+        if (t.value !== 'Otro') holder[col + '_otro'] = '';
         if (arr === 'casosIngresados') recalculateStatsFromCases(true);
         saveDraft();
         renderDynamicTables();
@@ -1619,14 +1880,38 @@
         const key = addBtn.getAttribute('data-add-row');
         const templates = {
           personalApoyo: { nombre: '', cargo: '', origen: '', horario: '', observacion: '' },
-          casosIngresados: { n_caso: '', detenidos: '0', agraviado: '1', delito: '', delito_otro: '', medidas: 'Ninguna', medidas_otro: '', resultado: '', resultado_otro: '' },
           audiencias: { carpeta: '', exp_juzgado: '', tipo_audiencia: '', tipo_audiencia_otro: '', resultado: '', resultado_otro: '', observacion: '' }
         };
-        state[key].push({ ...templates[key] });
+        state[key].push(key === 'casosIngresados' ? newCasoRow() : { ...templates[key] });
         if (key === 'casosIngresados') recalculateStatsFromCases(true);
         saveDraft();
         renderDynamicTables();
         renderPreview();
+      }
+
+      const addDelitoBtn = e.target.closest('[data-add-delito]');
+      if (addDelitoBtn) {
+        const ci = Number(addDelitoBtn.getAttribute('data-add-delito'));
+        if (state.casosIngresados[ci]) {
+          state.casosIngresados[ci].delitos.push(newDelitoRow());
+          saveDraft();
+          renderDynamicTables();
+          renderPreview();
+        }
+      }
+
+      const delDelitoBtn = e.target.closest('[data-del-delito]');
+      if (delDelitoBtn) {
+        const ci = Number(delDelitoBtn.getAttribute('data-del-delito'));
+        const di = Number(delDelitoBtn.getAttribute('data-di'));
+        const delitos = state.casosIngresados[ci]?.delitos;
+        if (delitos && delitos.length > 1) {
+          delitos.splice(di, 1);
+          recalculateStatsFromCases(true);
+          saveDraft();
+          renderDynamicTables();
+          renderPreview();
+        }
       }
 
       const delBtn = e.target.closest('[data-del-arr]');
@@ -1677,19 +1962,26 @@
           const rows = lines.map(parseLine);
           const first = (rows[0][0] || '').toLowerCase();
           const startIdx = first.includes('carpeta') || first.includes('caso') || first.includes('n°') ? 1 : 0;
-          const imported = rows.slice(startIdx).map((cols) => ({
-            n_caso: cols[0] || '',
-            detenidos: String(parseInt(cols[1], 10) || 0),
-            agraviado: String(parseInt(cols[2], 10) || 1),
-            delito: DELITOS_FLAGRANCIA.includes(cols[3]) ? cols[3] : (cols[3] ? 'Otro' : ''),
-            delito_otro: DELITOS_FLAGRANCIA.includes(cols[3]) ? '' : (cols[3] || ''),
-            medidas: MEDIDAS_COERCITIVAS.includes(cols[4]) ? cols[4] : (cols[4] ? 'Otro' : 'Ninguna'),
-            medidas_otro: MEDIDAS_COERCITIVAS.includes(cols[4]) ? '' : (cols[4] || ''),
-            resultado: RESULTADOS_CASO.includes(cols[5]) ? cols[5] : (cols[5] ? 'Otro' : ''),
-            resultado_otro: RESULTADOS_CASO.includes(cols[5]) ? '' : (cols[5] || '')
-          })).filter((r) => r.n_caso || r.delito || r.delito_otro);
+          const imported = rows.slice(startIdx).map((cols) => {
+            const delitoTxt = cols[3] || '';
+            const resultTxt = cols[5] || '';
+            return newCasoRow({
+              n_caso: cols[0] || '',
+              detenidos: String(parseInt(cols[1], 10) || 0),
+              agraviado: String(parseInt(cols[2], 10) || 1),
+              medidas: MEDIDAS_COERCITIVAS.includes(cols[4]) ? cols[4] : (cols[4] ? 'Otro' : 'Ninguna'),
+              medidas_otro: MEDIDAS_COERCITIVAS.includes(cols[4]) ? '' : (cols[4] || ''),
+              delitos: [newDelitoRow({
+                nombre: DELITOS_FLAGRANCIA.includes(delitoTxt) ? delitoTxt : (delitoTxt ? 'Otro' : ''),
+                otro: DELITOS_FLAGRANCIA.includes(delitoTxt) ? '' : delitoTxt,
+                resultado: RESULTADOS_CASO.includes(resultTxt) ? resultTxt : (resultTxt ? 'Otro' : ''),
+                resultado_otro: RESULTADOS_CASO.includes(resultTxt) ? '' : resultTxt
+              })]
+            });
+          }).filter((r) => r.n_caso || r.delitos.some((d) => d.nombre || d.otro));
           if (!imported.length) throw new Error('Sin filas válidas');
-          if (state.casosIngresados.length === 1 && !state.casosIngresados[0].n_caso && !state.casosIngresados[0].delito) {
+          const vacia = (c) => !c.n_caso && !c.delitos.some((d) => d.nombre || d.otro);
+          if (state.casosIngresados.length === 1 && vacia(state.casosIngresados[0])) {
             state.casosIngresados = imported;
           } else {
             state.casosIngresados = state.casosIngresados.concat(imported);
@@ -1698,7 +1990,7 @@
           saveDraft();
           renderDynamicTables();
           renderPreview();
-          showToast(`Se importaron ${imported.length} caso(s) en la Sección 4.1.`);
+          showToast(`Se importaron ${imported.length} caso(s) en la Sección 3.1.`);
         } catch (err) {
           showToast('No se pudo importar el CSV: ' + err.message, true);
         }
@@ -1800,7 +2092,7 @@
       const reader = new FileReader();
       reader.onload = async () => {
         try {
-          const imported = { ...getDefaultState(), ...JSON.parse(reader.result) };
+          const imported = normalizeState(JSON.parse(reader.result));
           if (isAdminRole() && !$('#adminPanel').classList.contains('hidden')) {
             await sb.from('informes_turno').insert({
               user_id: currentAccount.id,
@@ -1856,6 +2148,14 @@
       $('#loginScreen').classList.remove('hidden');
     });
 
+
     goToStep(0);
-  });
+  };
+
+  // Arranca al cargar el DOM (o de inmediato si el script se cargó después).
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', onReady, { once: true });
+  } else {
+    onReady();
+  }
 })();

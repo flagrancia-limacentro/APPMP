@@ -989,6 +989,55 @@ html, body {
   resize: vertical;
 }
 
+/* Subregistros de delitos dentro de un caso (Sección 3.1) */
+.dyn-delitos-cell {
+  min-width: 320px;
+}
+
+.dyn-delito-item {
+  display: flex;
+  gap: 6px;
+  align-items: flex-start;
+  padding: 6px 0;
+  border-bottom: 1px dashed var(--border-soft);
+}
+
+.dyn-delito-item:last-of-type {
+  border-bottom: none;
+}
+
+.dyn-delito-letra {
+  font-weight: 700;
+  color: var(--mp-navy);
+  font-size: 12px;
+  padding-top: 22px;
+  min-width: 16px;
+}
+
+.dyn-delito-fields {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.dyn-delito-fields label {
+  font-size: 10.5px;
+  font-weight: 600;
+  color: #64748b;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+}
+
+.dyn-delito-del {
+  margin-top: 18px;
+}
+
+.dyn-add-delito {
+  margin-top: 6px;
+  width: 100%;
+}
+
 .step-footer {
   display: flex;
   justify-content: space-between;
