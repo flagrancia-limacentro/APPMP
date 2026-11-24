@@ -1151,6 +1151,23 @@
     previewResizeTimer = setTimeout(fitPreviewSheet, 120);
   });
 
+  // Envía el informe a Presidencia (c.c. Coordinación). Lo usan el botón de
+  // la barra superior y el botón final de la última sección.
+  async function enviarAPresidencia() {
+    const missing = validateCriticalFields();
+    saveDraft();
+    try {
+      await syncCloudRecord('enviado');
+      if (missing.length) {
+        showToast(`Enviado a Presidencia (c.c. Coordinación) (aviso: faltó completar ${missing.join(', ')}).`);
+      } else {
+        showToast('Informe enviado a Presidencia de la Junta de Fiscales Superiores (c.c. Coordinación).');
+      }
+    } catch (err) {
+      showToast('Error al enviar a Coordinación: ' + err.message, true);
+    }
+  }
+
   function goToStep(stepIdx) {
     currentStep = Math.max(0, Math.min(6, stepIdx));
     $$('.step-pane').forEach((p) => {
@@ -1161,7 +1178,17 @@
     });
     $('#stepCounter').textContent = `Sección ${currentStep + 1} de 7`;
     $('#btnPrevStep').disabled = currentStep === 0;
-    $('#btnNextStep').disabled = currentStep === 6;
+
+    // En la última sección el botón de avance se convierte en el envío a
+    // Presidencia con copia a Coordinación.
+    const next = $('#btnNextStep');
+    const esUltimo = currentStep === 6;
+    const puedeEnviar = !isAdminRole();
+    next.textContent = esUltimo ? 'Enviar a Presidencia (c.c. Coordinación)' : 'Siguiente sección →';
+    next.classList.toggle('btn-gold', esUltimo && puedeEnviar);
+    next.classList.toggle('btn-primary', !(esUltimo && puedeEnviar));
+    next.disabled = esUltimo && !puedeEnviar;
+    next.dataset.accion = esUltimo ? 'enviar' : 'avanzar';
   }
 
   function isAdminRole(acc = currentAccount) {
@@ -1803,20 +1830,7 @@
       }
     });
 
-    $('#btnSendToCoord').addEventListener('click', async () => {
-      const missing = validateCriticalFields();
-      saveDraft();
-      try {
-        await syncCloudRecord('enviado');
-        if (missing.length) {
-          showToast(`Enviado a Presidencia (c.c. Coordinación) (aviso: faltó completar ${missing.join(', ')}).`);
-        } else {
-          showToast('Informe enviado a Presidencia de la Junta de Fiscales Superiores (c.c. Coordinación).');
-        }
-      } catch (err) {
-        showToast('Error al enviar a Coordinación: ' + err.message, true);
-      }
-    });
+    $('#btnSendToCoord').addEventListener('click', enviarAPresidencia);
 
     const searchInp = $('#adminSearchInput');
     if (searchInp) {
@@ -1927,7 +1941,13 @@
       btn.addEventListener('click', () => goToStep(Number(btn.dataset.step)));
     });
     $('#btnPrevStep').addEventListener('click', () => goToStep(currentStep - 1));
-    $('#btnNextStep').addEventListener('click', () => goToStep(currentStep + 1));
+    $('#btnNextStep').addEventListener('click', () => {
+      if ($('#btnNextStep').dataset.accion === 'enviar') {
+        enviarAPresidencia();
+      } else {
+        goToStep(currentStep + 1);
+      }
+    });
 
     // Bindings de campos simples
     document.addEventListener('input', (e) => {
