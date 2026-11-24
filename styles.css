@@ -695,7 +695,7 @@ html, body {
 /* Workspace Layout */
 .workspace {
   display: grid;
-  grid-template-columns: 240px 1fr;
+  grid-template-columns: 240px minmax(0, 1fr);
   flex: 1;
   max-width: 1600px;
   width: 100%;
@@ -704,8 +704,20 @@ html, body {
   padding: 18px 20px;
 }
 
+/* La vista previa necesita sitio para su hoja: minmax(0, ...) evita que el
+   contenido del formulario (tablas anchas) la comprima. */
 .workspace.preview-open {
-  grid-template-columns: 220px 1fr 1fr;
+  grid-template-columns: 220px minmax(0, 1fr) minmax(460px, 620px);
+  max-width: 1900px;
+}
+
+.workspace > * {
+  min-width: 0;
+}
+
+.form-panel {
+  min-width: 0;
+  overflow-x: auto;
 }
 
 /* Sidebar Navigation */
@@ -989,15 +1001,15 @@ html, body {
   resize: vertical;
 }
 
-/* Subregistros de delitos dentro de un caso (Sección 3.1) */
+/* Subregistros de delitos dentro de un caso (Sección 3.1).
+   Ojo: sin min-width fijos, para que la tabla no imponga un ancho mínimo a
+   la columna del formulario y termine comprimiendo la vista previa. */
 .dyn-delitos-cell {
-  min-width: 260px;
   width: 30%;
 }
 
 .dyn-medidas-cell,
 .dyn-resultado-cell {
-  min-width: 210px;
   width: 24%;
 }
 
@@ -1090,11 +1102,13 @@ html, body {
   top: 74px;
 }
 
+/* Ancho A4 fijo: la hoja nunca se reflúye. Si no cabe en el panel se
+   escala con zoom (ver fitPreviewSheet) para conservar su aspecto. */
 .doc-sheet {
   background: #ffffff;
   color: #000000;
-  width: 100%;
-  max-width: 794px;
+  width: 794px;
+  max-width: none;
   margin: 0 auto;
   padding: 36px 46px 42px;
   box-shadow: 0 8px 28px rgba(0, 0, 0, 0.22);
@@ -1177,6 +1191,20 @@ html, body {
   border-collapse: collapse;
   margin: 6px 0 10px;
   font-size: 9pt;
+}
+
+/* En la hoja todas las celdas deben refluir: nunca imponer un ancho mínimo
+   (si no, el contenido desborda y la hoja se ve cortada). Solo se permite
+   cortar palabras larguísimas (números de carpeta), nunca las normales. */
+.doc-table th,
+.doc-table td {
+  overflow-wrap: break-word;
+  word-break: normal;
+  hyphens: manual;
+}
+
+.doc-table td > * {
+  min-width: 0;
 }
 
 .doc-table th,

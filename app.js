@@ -1130,7 +1130,26 @@
         <span>www.fiscalia.gob.pe</span>
       </div>
     `;
+
+    fitPreviewSheet();
   }
+
+  // La hoja es A4 (794px). Si el panel es más angosto se escala con zoom en
+  // lugar de reflujir el texto, para que el informe no se desnaturalice.
+  function fitPreviewSheet() {
+    const panel = $('#previewPanel');
+    const sheet = $('#docPreview');
+    if (!panel || !sheet) return;
+    const disponible = panel.clientWidth - 36; // padding del panel
+    const escala = disponible > 0 ? Math.min(1, disponible / 794) : 1;
+    sheet.style.zoom = String(Number(escala.toFixed(3)));
+  }
+
+  let previewResizeTimer = null;
+  window.addEventListener('resize', () => {
+    clearTimeout(previewResizeTimer);
+    previewResizeTimer = setTimeout(fitPreviewSheet, 120);
+  });
 
   function goToStep(stepIdx) {
     currentStep = Math.max(0, Math.min(6, stepIdx));
@@ -2178,6 +2197,7 @@
       $('#workspace').classList.toggle('preview-open', previewVisible);
       $('#previewPanel').classList.toggle('hidden', !previewVisible);
       $('#btnTogglePreview').textContent = previewVisible ? 'Ocultar Vista Previa' : 'Mostrar Vista Previa';
+      if (previewVisible) setTimeout(fitPreviewSheet, 30);
     });
 
     $('#btnFillExample').addEventListener('click', () => {
