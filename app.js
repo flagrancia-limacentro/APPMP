@@ -798,7 +798,7 @@
     if (!tbody) return;
     const rows = state.casosIngresados || [];
     if (rows.length === 0) {
-      tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:#64748b;padding:12px;">Sin registros. Haga clic en "+ Agregar caso" para añadir uno.</td></tr>';
+      tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;color:#64748b;padding:12px;">Sin registros. Haga clic en "+ Agregar caso" para añadir uno.</td></tr>';
       return;
     }
 
@@ -816,30 +816,36 @@
     tbody.innerHTML = rows.map((row, ci) => {
       const delitos = getDelitosRows(row);
       const nDel = delitos.length;
-      const delitoCells = delitos.map((d, di) => {
+      // Tres columnas independientes (delito, medida, resultado) con una
+      // subfila por delito, alineadas por la letra a) b) c). El botón de
+      // quitar delito vive en la columna Delito; las otras dos reservan el
+      // mismo ancho para que las subfilas queden a la misma altura.
+      const subRows = (renderFn, conBoton = false) => delitos.map((d, di) => {
         const prefijo = nDel > 1 ? `<span class="dyn-delito-letra">${letrasDelito(di)})</span>` : '';
-        const delSel = selectHtml('casosIngresados', ci, di, 'nombre', DELITOS_FLAGRANCIA, d.nombre, d.otro, 'otro');
-        const medSel = selectHtml('casosIngresados', ci, di, 'medidas', MEDIDAS_COERCITIVAS, d.medidas, d.medidas_otro, 'medidas_otro');
-        const resSel = selectHtml('casosIngresados', ci, di, 'resultado', RESULTADOS_CASO, d.resultado, d.resultado_otro, 'resultado_otro');
+        const boton = conBoton && nDel > 1
+          ? `<button type="button" class="btn btn-danger-soft btn-sm dyn-delito-del" data-del-delito="${ci}" data-di="${di}" title="Quitar este delito">✕</button>`
+          : '<span class="dyn-delito-del-espacio"></span>';
         return `<div class="dyn-delito-item">
-          ${prefijo}
-          <div class="dyn-delito-fields">
-            <label>Delito</label>${delSel}
-            <label>Medida coercitiva</label>${medSel}
-            <label>Resultado de este delito</label>${resSel}
-          </div>
-          ${nDel > 1 ? `<button type="button" class="btn btn-danger-soft btn-sm dyn-delito-del" data-del-delito="${ci}" data-di="${di}" title="Quitar este delito">✕</button>` : ''}
+          ${prefijo}<div class="dyn-delito-fields">${renderFn(d, di)}</div>${boton}
         </div>`;
       }).join('');
+
+      const delitoCells = subRows((d, di) =>
+        selectHtml('casosIngresados', ci, di, 'nombre', DELITOS_FLAGRANCIA, d.nombre, d.otro, 'otro'), true);
+      const medidaCells = subRows((d, di) =>
+        selectHtml('casosIngresados', ci, di, 'medidas', MEDIDAS_COERCITIVAS, d.medidas, d.medidas_otro, 'medidas_otro'));
+      const resultadoCells = subRows((d, di) =>
+        selectHtml('casosIngresados', ci, di, 'resultado', RESULTADOS_CASO, d.resultado, d.resultado_otro, 'resultado_otro'));
+      const addBtn = `<button type="button" class="btn btn-outline btn-sm dyn-add-delito" data-add-delito="${ci}">+ Agregar delito</button>`;
 
       return `<tr>
         <td style="text-align:center;font-weight:700;color:#475569;">${ci + 1}</td>
         <td><input type="text" data-arr="casosIngresados" data-idx="${ci}" data-col="n_caso" value="${escapeHtml(row.n_caso || '')}" placeholder="Ej. 20-2026" /></td>
         <td><input type="number" min="0" data-arr="casosIngresados" data-idx="${ci}" data-col="detenidos" value="${escapeHtml(row.detenidos || '0')}" placeholder="0" /></td>
         <td><input type="number" min="0" data-arr="casosIngresados" data-idx="${ci}" data-col="agraviado" value="${escapeHtml(row.agraviado || '1')}" placeholder="1" /></td>
-        <td class="dyn-delitos-cell">${delitoCells}
-          <button type="button" class="btn btn-outline btn-sm dyn-add-delito" data-add-delito="${ci}">+ Agregar delito</button>
-        </td>
+        <td class="dyn-delitos-cell">${delitoCells}${addBtn}</td>
+        <td class="dyn-medidas-cell">${medidaCells}</td>
+        <td class="dyn-resultado-cell">${resultadoCells}</td>
         <td><button type="button" class="btn btn-danger-soft btn-sm" data-del-arr="casosIngresados" data-idx="${ci}" title="Eliminar caso">✕</button></td>
       </tr>`;
     }).join('');
@@ -978,7 +984,7 @@
       <div class="doc-section-title">3. DETALLE DE CASOS</div>
       <div class="doc-subsection-title">3.1 Casos ingresados durante el turno</div>
       <table class="doc-table">
-        <thead><tr><th>N°</th><th>Carpeta fiscal / caso</th><th>Detenido(s) (N)</th><th>Agraviado (N)</th><th>Delito(s)</th><th>Medida coercitiva por delito</th><th>Resultado por delito</th></tr></thead>
+        <thead><tr><th>N°</th><th>Carpeta fiscal / caso</th><th>Detenido(s) (N)</th><th>Agraviado (N)</th><th>Delito(s)</th><th>Medidas coercitivas</th><th>Resultado por delito</th></tr></thead>
         <tbody>
           ${renderCasosHtml()}
           <tr><td colspan="6" style="font-weight:700;text-align:right;">Total de detenidos del turno</td><td style="font-weight:700;text-align:center;">${escapeHtml(state.total_detenidos)}</td></tr>
@@ -1395,7 +1401,7 @@
         replaceInNode(headerRow, {
           'Detenido(s)': 'Detenido(s) (N)',
           'Agraviado': 'Agraviado (N)',
-          'Diligencias realizadas': 'Medida coercitiva por delito',
+          'Diligencias realizadas': 'Medidas coercitivas',
           'Delito': 'Delito(s)',
           'Resultado y estado actual': 'Resultado por delito'
         });
