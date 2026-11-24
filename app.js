@@ -843,8 +843,8 @@
         <td><input type="text" data-arr="casosIngresados" data-idx="${ci}" data-col="n_caso" value="${escapeHtml(row.n_caso || '')}" placeholder="Ej. 20-2026" /></td>
         <td><input type="number" min="0" data-arr="casosIngresados" data-idx="${ci}" data-col="detenidos" value="${escapeHtml(row.detenidos || '0')}" placeholder="0" /></td>
         <td><input type="number" min="0" data-arr="casosIngresados" data-idx="${ci}" data-col="agraviado" value="${escapeHtml(row.agraviado || '1')}" placeholder="1" /></td>
-        <td class="dyn-delitos-cell">${delitoCells}${addBtn}</td>
         <td class="dyn-medidas-cell">${medidaCells}</td>
+        <td class="dyn-delitos-cell">${delitoCells}${addBtn}</td>
         <td class="dyn-resultado-cell">${resultadoCells}</td>
         <td><button type="button" class="btn btn-danger-soft btn-sm" data-del-arr="casosIngresados" data-idx="${ci}" title="Eliminar caso">✕</button></td>
       </tr>`;
