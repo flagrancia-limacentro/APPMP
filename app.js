@@ -158,62 +158,78 @@
       n_caso: '',
       detenidos: '0',
       agraviado: '1',
-      // Cada caso puede contener varios delitos, y cada delito puede tener
-      // su propia medida coercitiva y un resultado distinto (incoado,
-      // derivado, archivado, ampliado, etc.).
+      // Lista libre de medidas coercitivas del caso (independiente de los
+      // delitos: se pueden agregar tantas como se necesiten).
+      medidas: [newMedidaRow('Ninguna')],
+      // Cada caso puede contener varios delitos, cada uno con su propio
+      // resultado (incoado, derivado, archivado, ampliado, etc.).
       delitos: [newDelitoRow()],
       ...over
     };
   }
 
-  function newDelitoRow(over = {}) {
-    return { nombre: '', otro: '', medidas: 'Ninguna', medidas_otro: '', resultado: '', resultado_otro: '', ...over };
+  function newMedidaRow(val = '', otro = '') {
+    return { valor: val, otro: otro || '' };
   }
 
-  // Convierte borradores antiguos (un solo delito, medida y resultado por
-  // caso) al modelo de lista de delitos por caso.
+  function newDelitoRow(over = {}) {
+    return { nombre: '', otro: '', resultado: '', resultado_otro: '', ...over };
+  }
+
+  // Convierte borradores de versiones anteriores al modelo actual: delito y
+  // resultado en lista por caso, y medidas en lista libre por caso.
   function normalizeCaseRow(row) {
     const base = newCasoRow();
     const merged = { ...base, ...(row || {}) };
-    // Solo se toma delitos si el origen realmente lo trae (modelo nuevo);
-    // si no, se migra el delito/medida/resultado únicos del modelo anterior.
+
+    // --- Delitos y resultado ---
     let delitos = row && Array.isArray(row.delitos) ? row.delitos : null;
     if (!delitos || delitos.length === 0) {
-      const viejoDelito = String(row?.delito || '').trim();
-      const viejoOtro = String(row?.delito_otro || '').trim();
-      const viejoResultado = String(row?.resultado || '').trim();
-      const viejoResultadoOtro = String(row?.resultado_otro || '').trim();
+      // Modelo original: un solo delito/resultado por caso.
       delitos = [newDelitoRow({
-        nombre: viejoDelito,
-        otro: viejoOtro,
-        medidas: row?.medidas || 'Ninguna',
-        medidas_otro: row?.medidas_otro || '',
-        resultado: viejoResultado,
-        resultado_otro: viejoResultadoOtro
+        nombre: String(row?.delito || '').trim(),
+        otro: String(row?.delito_otro || '').trim(),
+        resultado: String(row?.resultado || '').trim(),
+        resultado_otro: String(row?.resultado_otro || '').trim()
       })];
-    } else {
-      // Modelo con delitos, pero con medidas todavía a nivel de caso.
-      const medCaso = String(row?.medidas || '').trim();
-      const medOtroCaso = String(row?.medidas_otro || '').trim();
-      if (medCaso || medOtroCaso) {
-        delitos = delitos.map((d) => ({
-          ...d,
-          medidas: (d?.medidas || '') || medCaso || 'Ninguna',
-          medidas_otro: (d?.medidas_otro || '') || medOtroCaso
-        }));
-      }
     }
     merged.delitos = delitos.map((d) => newDelitoRow({
       nombre: d?.nombre || '',
       otro: d?.otro || '',
-      medidas: d?.medidas || 'Ninguna',
-      medidas_otro: d?.medidas_otro || '',
       resultado: d?.resultado || '',
       resultado_otro: d?.resultado_otro || ''
     }));
+
+    // --- Medidas coercitivas (lista libre del caso) ---
+    let medidas = null;
+    if (row && Array.isArray(row.medidas)) {
+      medidas = row.medidas.map((m) => newMedidaRow(
+        String(m?.valor || '').trim() || 'Ninguna',
+        String(m?.otro || '').trim()
+      ));
+    } else {
+      medidas = [];
+      // Versión anterior: una medida por delito.
+      (row && Array.isArray(row.delitos) ? row.delitos : []).forEach((d) => {
+        const v = String(d?.medidas || '').trim();
+        const o = String(d?.medidas_otro || '').trim();
+        if ((v && v !== 'Ninguna') || o) {
+          if (!medidas.some((m) => m.valor === v && m.otro === o)) medidas.push(newMedidaRow(v || 'Otro', o));
+        }
+      });
+      // Modelo original: una medida por caso.
+      const medCaso = String(row?.medidas || '').trim();
+      const medOtroCaso = String(row?.medidas_otro || '').trim();
+      if (!medidas.length && (medCaso || medOtroCaso)) {
+        medidas.push(newMedidaRow(medCaso || 'Ninguna', medOtroCaso));
+      }
+      if (!medidas.length) medidas.push(newMedidaRow('Ninguna'));
+    }
+    if (!medidas.length) medidas.push(newMedidaRow('Ninguna'));
+    merged.medidas = medidas;
+
     delete merged.delito;
     delete merged.delito_otro;
-    delete merged.medidas;
     delete merged.medidas_otro;
     delete merged.resultado;
     delete merged.resultado_otro;
@@ -358,14 +374,20 @@
       ],
       casosIngresados: [
         { n_caso: '506014505-2026-1412-0', detenidos: '1', agraviado: '1',
-          delitos: [{ nombre: 'Conducción en estado de ebriedad o drogadicción (Art. 274 CP)', otro: '', medidas: 'Personal: Comparecencia simple (Art. 286 CPP)', medidas_otro: '', resultado: 'Principio de oportunidad', resultado_otro: '' }] },
+          medidas: [{ valor: 'Personal: Comparecencia simple (Art. 286 CPP)', otro: '' }],
+          delitos: [{ nombre: 'Conducción en estado de ebriedad o drogadicción (Art. 274 CP)', otro: '', resultado: 'Principio de oportunidad', resultado_otro: '' }] },
         { n_caso: '506014505-2026-1413-0', detenidos: '2', agraviado: '1',
+          medidas: [
+            { valor: 'Personal: Comparecencia con restricciones (Art. 287 CPP)', otro: '' },
+            { valor: 'Real: Incautación (Art. 316 CPP)', otro: '' }
+          ],
           delitos: [
-            { nombre: 'Hurto agravado (Art. 186 CP)', otro: '', medidas: 'Personal: Comparecencia con restricciones (Art. 287 CPP)', medidas_otro: '', resultado: 'Incoación de proceso inmediato', resultado_otro: '' },
-            { nombre: 'Tenencia o porte ilegal de armas de fuego, municiones o explosivos (Art. 279-G CP)', otro: '', medidas: 'Real: Incautación (Art. 316 CPP)', medidas_otro: '', resultado: 'Derivación a otro despacho', resultado_otro: '' }
+            { nombre: 'Hurto agravado (Art. 186 CP)', otro: '', resultado: 'Incoación de proceso inmediato', resultado_otro: '' },
+            { nombre: 'Tenencia o porte ilegal de armas de fuego, municiones o explosivos (Art. 279-G CP)', otro: '', resultado: 'Derivación a otro despacho', resultado_otro: '' }
           ] },
         { n_caso: '506014505-2026-1414-0', detenidos: '0', agraviado: '1',
-          delitos: [{ nombre: 'Apropiación ilícita común (Art. 190 CP)', otro: '', medidas: 'Ninguna', medidas_otro: '', resultado: 'Ampliación de investigación preliminar o de diligencias', resultado_otro: '' }] }
+          medidas: [{ valor: 'Real: Incautación (Art. 316 CPP)', otro: '' }],
+          delitos: [{ nombre: 'Apropiación ilícita común (Art. 190 CP)', otro: '', resultado: 'Ampliación de investigación preliminar o de diligencias', resultado_otro: '' }] }
       ],
       audiencias: [
         { carpeta: '506014505-2026-1413-0', exp_juzgado: 'Exp. 04122-2026 — 2° Juzgado de Flagrancia', tipo_audiencia: 'Audiencia Única de Incoación de Proceso Inmediato (Art. 447 CPP)', tipo_audiencia_otro: '', resultado: 'Fundado', resultado_otro: '', observacion: 'Se dictó comparecencia con restricciones y se remitió a juicio inmediato.' }
@@ -534,10 +556,18 @@
     return list.map((d) => ({
       nombre: String(d?.nombre || ''),
       otro: String(d?.otro || ''),
-      medidas: String(d?.medidas || ''),
-      medidas_otro: String(d?.medidas_otro || ''),
       resultado: String(d?.resultado || ''),
       resultado_otro: String(d?.resultado_otro || '')
+    }));
+  }
+
+  // Devuelve las medidas coercitivas del caso (lista libre, siempre una).
+  function getMedidasRows(caso) {
+    const list = Array.isArray(caso?.medidas) ? caso.medidas : [];
+    if (!list.length) return [newMedidaRow('Ninguna')];
+    return list.map((m) => ({
+      valor: String(m?.valor || ''),
+      otro: String(m?.otro || '')
     }));
   }
 
@@ -559,10 +589,10 @@
     return res;
   }
 
-  function getMedidaDisplay(d) {
-    const med = String(d?.medidas || '').trim();
+  function getMedidaDisplay(m) {
+    const med = String(m?.valor || '').trim();
     if (med === 'Otro') {
-      const custom = String(d?.medidas_otro || '').trim();
+      const custom = String(m?.otro || '').trim();
       return custom ? `Otro: ${custom}` : 'Otro';
     }
     return med;
@@ -617,25 +647,24 @@
   }
 
   function buildMedidasCellHtml(caso) {
-    const items = getDelitosRows(caso);
-    const lines = items.map((d, i) => {
-      const label = items.length > 1 ? `<strong>${letrasDelito(i)})</strong> ` : '';
-      const txt = getMedidaDisplay(d);
-      return txt ? `${label}${escapeHtml(txt)}` : '';
-    }).filter(Boolean);
-    return lines.join('<br/>');
+    // Lista libre de medidas del caso: sin letras, cada una en su línea.
+    const lines = getMedidasRows(caso)
+      .map((m) => {
+        const txt = getMedidaDisplay(m);
+        return txt && txt !== 'Ninguna' ? escapeHtml(txt) : '';
+      })
+      .filter(Boolean);
+    return lines.length ? lines.join('<br/>') : 'Ninguna';
   }
 
   function buildMedidasCellText(caso) {
-    const items = getDelitosRows(caso);
-    return items
-      .map((d, i) => {
-        const txt = getMedidaDisplay(d);
-        if (!txt) return '';
-        return items.length > 1 ? `${letrasDelito(i)}) ${txt}` : txt;
+    const lines = getMedidasRows(caso)
+      .map((m) => {
+        const txt = getMedidaDisplay(m);
+        return txt && txt !== 'Ninguna' ? txt : '';
       })
-      .filter(Boolean)
-      .join('\n');
+      .filter(Boolean);
+    return lines.length ? lines.join('\n') : 'Ninguna';
   }
 
   function recalculateStatsFromCases(syncDom = true) {
@@ -680,8 +709,8 @@
       if (detN > 0) conDet++;
       else sinDet++;
 
-      // Los resultados, las medidas y los delitos se cuentan por delito: un
-      // mismo caso puede tener un delito incoado y otro derivado o archivado.
+      // Los resultados y los delitos se cuentan por delito: un mismo caso
+      // puede tener un delito incoado y otro derivado o archivado.
       getDelitosRows(c).forEach((d) => {
         const res = String(d.resultado || '').trim();
         if (res && resMap[res]) {
@@ -692,7 +721,15 @@
           if (detalle) resOtrosDetalles.push(detalle);
         }
 
-        const med = String(d.medidas || '').trim();
+        const delName = getDelitoDisplay(d);
+        if (delName) delitoFreq[delName] = (delitoFreq[delName] || 0) + 1;
+      });
+
+      // Las medidas son una lista libre por caso y se cuentan una a una.
+      getMedidasRows(c).forEach((m) => {
+        const med = String(m.valor || '').trim();
+        const medTxt = getMedidaDisplay(m);
+        if (medTxt === 'Ninguna') return;
         if (med.includes('Prisión preventiva')) medCounts.med_prision_preventiva++;
         else if (med.includes('Detención preliminar')) medCounts.med_detencion_preliminar++;
         else if (med.includes('Comparecencia con restricciones')) medCounts.med_comparecencia_restricciones++;
@@ -700,10 +737,7 @@
         else if (med.includes('Impedimento de salida')) medCounts.med_impedimento_salida++;
         else if (med.includes('Incautación')) medCounts.med_incautacion++;
         else if (med.includes('Embargo')) medCounts.med_embargo++;
-        else if (med && med !== 'Ninguna') medCounts.med_otras++;
-
-        const delName = getDelitoDisplay(d);
-        if (delName) delitoFreq[delName] = (delitoFreq[delName] || 0) + 1;
+        else if (med) medCounts.med_otras++;
       });
     });
 
@@ -802,24 +836,27 @@
       return;
     }
 
-    const selectHtml = (arr, ci, di, col, options, rawVal, otherVal, otherCol) => {
-      const diAttr = di === null || di === undefined ? '' : ` data-di="${di}"`;
+    // scope: '' (campo del caso), 'di' (subfila de delito) o 'mi'
+    // (subfila de la lista de medidas).
+    const selectHtml = (arr, ci, sub, col, options, rawVal, otherVal, otherCol, scope = 'di') => {
+      const subAttr = sub === null || sub === undefined || sub === ''
+        ? ''
+        : ` data-${scope}="${sub}"`;
       const opts = ['<option value="">-- Seleccione --</option>',
         ...options.map((opt) => `<option value="${escapeHtml(opt)}" ${rawVal === opt ? 'selected' : ''}>${escapeHtml(opt)}</option>`)
       ].join('');
       const other = rawVal === 'Otro'
-        ? `<input type="text" class="dyn-other-input" data-arr="${arr}" data-idx="${ci}"${diAttr} data-col="${otherCol}" value="${escapeHtml(otherVal || '')}" placeholder="Especifique..." />`
+        ? `<input type="text" class="dyn-other-input" data-arr="${arr}" data-idx="${ci}"${subAttr} data-col="${otherCol}" value="${escapeHtml(otherVal || '')}" placeholder="Especifique..." />`
         : '';
-      return `<select data-arr="${arr}" data-idx="${ci}"${diAttr} data-col="${col}">${opts}</select>${other}`;
+      return `<select data-arr="${arr}" data-idx="${ci}"${subAttr} data-col="${col}">${opts}</select>${other}`;
     };
 
     tbody.innerHTML = rows.map((row, ci) => {
       const delitos = getDelitosRows(row);
       const nDel = delitos.length;
-      // Tres columnas independientes (delito, medida, resultado) con una
-      // subfila por delito, alineadas por la letra a) b) c). El botón de
-      // quitar delito vive en la columna Delito; las otras dos reservan el
-      // mismo ancho para que las subfilas queden a la misma altura.
+      // Delito y Resultado forman un par con una subfila por delito,
+      // alineadas por la letra a) b) c). El botón de quitar delito vive en
+      // la columna Delito y la columna Resultado reserva el mismo ancho.
       const subRows = (renderFn, conBoton = false) => delitos.map((d, di) => {
         const prefijo = nDel > 1 ? `<span class="dyn-delito-letra">${letrasDelito(di)})</span>` : '';
         const boton = conBoton && nDel > 1
@@ -832,18 +869,28 @@
 
       const delitoCells = subRows((d, di) =>
         selectHtml('casosIngresados', ci, di, 'nombre', DELITOS_FLAGRANCIA, d.nombre, d.otro, 'otro'), true);
-      const medidaCells = subRows((d, di) =>
-        selectHtml('casosIngresados', ci, di, 'medidas', MEDIDAS_COERCITIVAS, d.medidas, d.medidas_otro, 'medidas_otro'));
       const resultadoCells = subRows((d, di) =>
         selectHtml('casosIngresados', ci, di, 'resultado', RESULTADOS_CASO, d.resultado, d.resultado_otro, 'resultado_otro'));
       const addBtn = `<button type="button" class="btn btn-outline btn-sm dyn-add-delito" data-add-delito="${ci}">+ Agregar delito</button>`;
+
+      // Medidas coercitivas: lista libre del caso, independiente de delitos.
+      const medidas = getMedidasRows(row);
+      const nMed = medidas.length;
+      const medidaCells = medidas.map((m, mi) => {
+        const sel = selectHtml('casosIngresados', ci, mi, 'medidas', MEDIDAS_COERCITIVAS, m.valor, m.otro, 'medidas_otro', 'mi');
+        const boton = nMed > 1
+          ? `<button type="button" class="btn btn-danger-soft btn-sm dyn-medida-del" data-del-medida="${ci}" data-mi="${mi}" title="Quitar esta medida">✕</button>`
+          : '<span class="dyn-delito-del-espacio"></span>';
+        return `<div class="dyn-medida-item"><div class="dyn-delito-fields">${sel}</div>${boton}</div>`;
+      }).join('');
+      const addMedidaBtn = `<button type="button" class="btn btn-outline btn-sm dyn-add-medida" data-add-medida="${ci}">+ Agregar medida</button>`;
 
       return `<tr>
         <td style="text-align:center;font-weight:700;color:#475569;">${ci + 1}</td>
         <td><input type="text" data-arr="casosIngresados" data-idx="${ci}" data-col="n_caso" value="${escapeHtml(row.n_caso || '')}" placeholder="Ej. 20-2026" /></td>
         <td><input type="number" min="0" data-arr="casosIngresados" data-idx="${ci}" data-col="detenidos" value="${escapeHtml(row.detenidos || '0')}" placeholder="0" /></td>
         <td><input type="number" min="0" data-arr="casosIngresados" data-idx="${ci}" data-col="agraviado" value="${escapeHtml(row.agraviado || '1')}" placeholder="1" /></td>
-        <td class="dyn-medidas-cell">${medidaCells}</td>
+        <td class="dyn-medidas-cell">${medidaCells}${addMedidaBtn}</td>
         <td class="dyn-delitos-cell">${delitoCells}${addBtn}</td>
         <td class="dyn-resultado-cell">${resultadoCells}</td>
         <td><button type="button" class="btn btn-danger-soft btn-sm" data-del-arr="casosIngresados" data-idx="${ci}" title="Eliminar caso">✕</button></td>
@@ -1882,8 +1929,11 @@
         const arr = t.getAttribute('data-arr');
         const idx = Number(t.getAttribute('data-idx'));
         const di = t.hasAttribute('data-di') ? Number(t.getAttribute('data-di')) : null;
+        const mi = t.hasAttribute('data-mi') ? Number(t.getAttribute('data-mi')) : null;
         const col = t.getAttribute('data-col');
-        if (di !== null) {
+        if (mi !== null) {
+          state[arr][idx].medidas[mi][col === 'medidas_otro' ? 'otro' : col] = t.value;
+        } else if (di !== null) {
           state[arr][idx].delitos[di][col] = t.value;
         } else {
           state[arr][idx][col] = t.value;
@@ -1917,10 +1967,16 @@
         const arr = t.getAttribute('data-arr');
         const idx = Number(t.getAttribute('data-idx'));
         const di = t.hasAttribute('data-di') ? Number(t.getAttribute('data-di')) : null;
+        const mi = t.hasAttribute('data-mi') ? Number(t.getAttribute('data-mi')) : null;
         const col = t.getAttribute('data-col');
-        const holder = di !== null ? state[arr][idx].delitos[di] : state[arr][idx];
-        holder[col] = t.value;
-        if (t.value !== 'Otro') holder[col + '_otro'] = '';
+        let holder;
+        if (mi !== null) holder = state[arr][idx].medidas[mi];
+        else if (di !== null) holder = state[arr][idx].delitos[di];
+        else holder = state[arr][idx];
+        const campoOtro = mi !== null ? 'otro' : col + '_otro';
+        const campoValor = mi !== null ? 'valor' : col;
+        holder[campoValor] = t.value;
+        if (t.value !== 'Otro') holder[campoOtro] = '';
         if (arr === 'casosIngresados') recalculateStatsFromCases(true);
         saveDraft();
         renderDynamicTables();
@@ -1963,6 +2019,31 @@
         const delitos = state.casosIngresados[ci]?.delitos;
         if (delitos && delitos.length > 1) {
           delitos.splice(di, 1);
+          recalculateStatsFromCases(true);
+          saveDraft();
+          renderDynamicTables();
+          renderPreview();
+        }
+      }
+
+      const addMedidaBtn = e.target.closest('[data-add-medida]');
+      if (addMedidaBtn) {
+        const ci = Number(addMedidaBtn.getAttribute('data-add-medida'));
+        if (state.casosIngresados[ci]) {
+          state.casosIngresados[ci].medidas.push(newMedidaRow('Ninguna'));
+          saveDraft();
+          renderDynamicTables();
+          renderPreview();
+        }
+      }
+
+      const delMedidaBtn = e.target.closest('[data-del-medida]');
+      if (delMedidaBtn) {
+        const ci = Number(delMedidaBtn.getAttribute('data-del-medida'));
+        const mi = Number(delMedidaBtn.getAttribute('data-mi'));
+        const medidas = state.casosIngresados[ci]?.medidas;
+        if (medidas && medidas.length > 1) {
+          medidas.splice(mi, 1);
           recalculateStatsFromCases(true);
           saveDraft();
           renderDynamicTables();
@@ -2026,11 +2107,13 @@
               n_caso: cols[0] || '',
               detenidos: String(parseInt(cols[1], 10) || 0),
               agraviado: String(parseInt(cols[2], 10) || 1),
+              medidas: [newMedidaRow(
+                MEDIDAS_COERCITIVAS.includes(medTxt) ? medTxt : (medTxt ? 'Otro' : 'Ninguna'),
+                MEDIDAS_COERCITIVAS.includes(medTxt) ? '' : medTxt
+              )],
               delitos: [newDelitoRow({
                 nombre: DELITOS_FLAGRANCIA.includes(delitoTxt) ? delitoTxt : (delitoTxt ? 'Otro' : ''),
                 otro: DELITOS_FLAGRANCIA.includes(delitoTxt) ? '' : delitoTxt,
-                medidas: MEDIDAS_COERCITIVAS.includes(medTxt) ? medTxt : (medTxt ? 'Otro' : 'Ninguna'),
-                medidas_otro: MEDIDAS_COERCITIVAS.includes(medTxt) ? '' : medTxt,
                 resultado: RESULTADOS_CASO.includes(resultTxt) ? resultTxt : (resultTxt ? 'Otro' : ''),
                 resultado_otro: RESULTADOS_CASO.includes(resultTxt) ? '' : resultTxt
               })]

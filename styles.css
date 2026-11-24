@@ -1001,6 +1001,29 @@ html, body {
   width: 24%;
 }
 
+/* Lista libre de medidas coercitivas del caso (independiente de delitos) */
+.dyn-medida-item {
+  display: flex;
+  gap: 6px;
+  align-items: flex-start;
+  padding: 3px 0;
+  min-height: 37px;
+}
+
+.dyn-medida-del,
+.dyn-add-medida {
+  flex: 0 0 auto;
+}
+
+.dyn-medida-del {
+  width: 30px;
+}
+
+.dyn-add-medida {
+  margin-top: 6px;
+  width: 100%;
+}
+
 /* Subfilas de delito: la misma altura en las tres columnas para que
    a) delito, a) medida y a) resultado queden alineados en la misma línea. */
 .dyn-delito-item {
