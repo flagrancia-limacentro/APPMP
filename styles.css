@@ -1355,5 +1355,167 @@ html, body {
     box-shadow: none !important;
     padding: 0 !important;
     max-width: none !important;
+    width: auto !important;
+    zoom: 1 !important;
   }
+
+  /* Impresión de la constancia de envío: solo se imprime la constancia */
+  body.printing-constancia .app-shell,
+  body.printing-constancia .login-screen,
+  body.printing-constancia .security-loader,
+  body.printing-constancia .topbar,
+  body.printing-constancia .workspace,
+  body.printing-constancia .admin-shell,
+  body.printing-constancia .constancia-banner,
+  body.printing-constancia .toast-container {
+    display: none !important;
+  }
+  body.printing-constancia .constancia-print {
+    display: block !important;
+  }
+}
+
+/* ================= CONSTANCIA DE ENVÍO ================= */
+.constancia-banner {
+  position: fixed;
+  left: 50%;
+  transform: translateX(-50%);
+  bottom: 22px;
+  z-index: 120;
+  background: #ffffff;
+  border: 1px solid var(--border-color);
+  border-left: 5px solid #b58119;
+  border-radius: 10px;
+  box-shadow: 0 12px 30px rgba(15, 23, 42, 0.22);
+  padding: 12px 16px;
+  max-width: min(760px, calc(100vw - 32px));
+}
+
+.constancia-banner.hidden {
+  display: none;
+}
+
+.constancia-banner-inner {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  flex-wrap: wrap;
+  justify-content: space-between;
+}
+
+.constancia-banner strong {
+  color: #166534;
+  font-size: 13px;
+}
+
+.constancia-meta {
+  display: block;
+  font-size: 11.5px;
+  color: #475569;
+  margin-top: 2px;
+}
+
+.constancia-meta code {
+  font-family: Consolas, monospace;
+  background: #f1f5f9;
+  padding: 1px 5px;
+  border-radius: 4px;
+  color: var(--mp-navy);
+}
+
+.constancia-actions {
+  display: flex;
+  gap: 8px;
+}
+
+/* Hoja de la constancia (solo visible al imprimir) */
+.constancia-print {
+  display: none;
+  position: relative;
+  background: #ffffff;
+  color: #000000;
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: 10.5pt;
+  line-height: 1.4;
+}
+
+.constancia-sheet {
+  width: 794px;
+  margin: 0 auto;
+  padding: 36px 46px 42px;
+}
+
+.constancia-title {
+  text-align: center;
+  font-weight: 700;
+  font-size: 13pt;
+  color: var(--mp-navy);
+  border-bottom: 2px solid var(--mp-navy);
+  padding-bottom: 8px;
+  margin: 6px 0 10px;
+}
+
+.constancia-code {
+  text-align: center;
+  font-size: 9.5pt;
+  color: #475569;
+  margin-bottom: 14px;
+}
+
+.constancia-p {
+  text-align: justify;
+  margin: 0 0 12px;
+}
+
+.constancia-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 14px;
+  font-size: 9.5pt;
+}
+
+.constancia-table td {
+  border: 1px solid #334155;
+  padding: 5px 8px;
+  vertical-align: top;
+}
+
+.constancia-table td:first-child {
+  background: #f8fafc;
+  font-weight: 700;
+  width: 36%;
+}
+
+.constancia-note {
+  font-size: 8.5pt;
+  color: #475569;
+  font-style: italic;
+}
+
+.constancia-sign {
+  margin: 54px 0 0;
+  text-align: center;
+  font-size: 10pt;
+  font-weight: 700;
+}
+
+.constancia-sign-line {
+  width: 260px;
+  border-top: 1px solid #334155;
+  margin: 0 auto 8px;
+}
+
+.constancia-sign-sub {
+  font-weight: 400;
+  font-size: 8.5pt;
+  color: #475569;
+}
+
+.constancia-foot {
+  margin-top: 40px;
+  border-top: 1px solid var(--border-soft);
+  padding-top: 8px;
+  font-size: 8pt;
+  color: #64748b;
+  text-align: center;
 }

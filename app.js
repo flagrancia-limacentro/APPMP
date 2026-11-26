@@ -1160,19 +1160,240 @@
   });
 
   // Envía el informe a Presidencia (c.c. Coordinación). Lo usan el botón de
-  // la barra superior y el botón final de la última sección.
+  // la barra superior y el botón final de la última sección. Devuelve true
+  // si el envío se registró.
   async function enviarAPresidencia() {
     const missing = validateCriticalFields();
     saveDraft();
     try {
-      await syncCloudRecord('enviado');
+      const saved = await syncCloudRecord('enviado');
+      guardarConstanciaEnvio(saved);
       if (missing.length) {
         showToast(`Enviado a Presidencia (c.c. Coordinación) (aviso: faltó completar ${missing.join(', ')}).`);
       } else {
         showToast('Informe enviado a Presidencia de la Junta de Fiscales Superiores (c.c. Coordinación).');
       }
+      showConstanciaBanner();
+      return true;
     } catch (err) {
       showToast('Error al enviar a Coordinación: ' + err.message, true);
+      return false;
+    }
+  }
+
+  // ---------------- CONSTANCIA DE ENVÍO ----------------
+  // Datos del último envío, para la constancia descargable. Se guarda en el
+  // borrador local del despacho (no en el estado del informe).
+  function getStorageKeyConstancia(acc = currentAccount) {
+    return STORAGE_PREFIX + 'ultimo_envio_' + (acc ? acc.id : 'default');
+  }
+
+  function guardarConstanciaEnvio(saved) {
+    try {
+      const rec = {
+        enviadoAt: new Date().toISOString(),
+        registroId: saved?.id || null,
+        username: currentAccount?.username || '',
+        despacho: state.nombre_despacho_emisor || currentAccount?.despacho || '',
+        numeroInforme: state.numero_informe || '',
+        anio: state.anio || '',
+        siglas: state.siglas_despacho || '',
+        turno: `${state.fecha_inicio || ''} ${state.hora_inicio || ''} — ${state.fecha_fin || ''} ${state.hora_fin || ''}`,
+        totalCasos: state.total_casos || '0',
+        totalDetenidos: state.total_detenidos || '0',
+        destinataria: state.destinataria_nombre || '',
+        copiasA: state.copias_a || ''
+      };
+      localStorage.setItem(getStorageKeyConstancia(), JSON.stringify(rec));
+      return rec;
+    } catch (_) {
+      return null;
+    }
+  }
+
+  function getConstanciaEnvio() {
+    try {
+      const raw = localStorage.getItem(getStorageKeyConstancia());
+      return raw ? JSON.parse(raw) : null;
+    } catch (_) {
+      return null;
+    }
+  }
+
+  // Código breve e irrepetible para acreditar el envío (no sustituye al
+  // registro de Supabase, solo permite identificarlo en papel).
+  function codigoConstancia(rec) {
+    if (!rec) return '—';
+    const base = `${rec.registroId || ''}${rec.username}${rec.enviadoAt}`;
+    let h = 0;
+    for (let i = 0; i < base.length; i++) h = (h * 31 + base.charCodeAt(i)) % 0xffffffff;
+    const n = h.toString(16).toUpperCase().padStart(8, '0');
+    const f = (rec.enviadoAt || '').replace(/\D/g, '').slice(0, 8);
+    return `${f}-${n.slice(0, 4)}-${n.slice(4, 8)}`;
+  }
+
+  function fechaHoraLarga(iso) {
+    if (!iso) return '—';
+    const d = new Date(iso);
+    return d.toLocaleString('es-PE', {
+      day: '2-digit', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit', second: '2-digit'
+    });
+  }
+
+  function showConstanciaBanner() {
+    const rec = getConstanciaEnvio();
+    const banner = $('#constanciaBanner');
+    if (!banner || !rec) return;
+    banner.innerHTML = `<div class="constancia-banner-inner">
+      <div>
+        <strong>✓ Informe enviado</strong>
+        <span class="constancia-meta">${escapeHtml(fechaHoraLarga(rec.enviadoAt))} · Código <code>${escapeHtml(codigoConstancia(rec))}</code></span>
+      </div>
+      <div class="constancia-actions">
+        <button type="button" class="btn btn-gold btn-sm" id="btnConstanciaPdf">Descargar cargo (PDF)</button>
+        <button type="button" class="btn btn-outline btn-sm" id="btnConstanciaDocx">Cargo (.docx)</button>
+      </div>
+    </div>`;
+    banner.classList.remove('hidden');
+  }
+
+  function hideConstanciaBanner() {
+    const banner = $('#constanciaBanner');
+    if (banner) banner.classList.add('hidden');
+  }
+
+  // Construye el HTML de la constancia; se usa para imprimir a PDF.
+  function buildConstanciaHtml(rec) {
+    const e = escapeHtml;
+    return `
+      <div class="constancia-sheet">
+        <div class="doc-header">
+          <img src="assets/header-mp.png" alt="Ministerio Público" />
+          <div class="doc-decenio">
+            "Decenio de la Igualdad de oportunidades para mujeres y hombres"<br/>
+            "Año de la Esperanza y el Fortalecimiento de la Democracia"
+          </div>
+        </div>
+
+        <div class="constancia-title">CONSTANCIA DE ENVÍO DE INFORME DE TURNO FISCAL</div>
+        <div class="constancia-code">Código de constancia: <strong>${e(codigoConstancia(rec))}</strong></div>
+
+        <p class="constancia-p">
+          Se deja constancia que el despacho que se indica a continuación remitió, por medio del Sistema de
+          Informe de Turno Fiscal del Distrito Fiscal de Lima Centro, el informe detallado en el presente
+          documento, con destino a la Presidencia de la Junta de Fiscales Superiores y copia a la
+          Coordinación Distrital de las Fiscalías Especializadas en Flagrancia Delictiva.
+        </p>
+
+        <table class="constancia-table">
+          <tr><td>Despacho remitente</td><td>${e(rec.despacho) || '—'}</td></tr>
+          <tr><td>Usuario del sistema</td><td>${e(rec.username) || '—'}</td></tr>
+          <tr><td>Informe N°</td><td>${e(rec.numeroInforme) || 'S/N'}${rec.anio ? '-' + e(rec.anio) : ''}${rec.siglas ? ' — ' + e(rec.siglas) : ''}</td></tr>
+          <tr><td>Turno fiscal</td><td>${e(rec.turno) || '—'}</td></tr>
+          <tr><td>Casos / detenidos</td><td>${e(rec.totalCasos)} caso(s) · ${e(rec.totalDetenidos)} detenido(s)</td></tr>
+          <tr><td>Destinataria</td><td>${e(rec.destinataria) || '—'}</td></tr>
+          <tr><td>Con copia a</td><td>${e(rec.copiasA) || '—'}</td></tr>
+          <tr><td>Fecha y hora de envío</td><td><strong>${e(fechaHoraLarga(rec.enviadoAt))}</strong></td></tr>
+          <tr><td>Registro en el sistema</td><td>${e(rec.registroId) || 'No disponible'}</td></tr>
+        </table>
+
+        <p class="constancia-p constancia-note">
+          La presente constancia acredita únicamente el envío del informe a través del sistema. El contenido
+          y los datos del informe son responsabilidad del despacho remitente.
+        </p>
+
+        <div class="constancia-sign">
+          <div class="constancia-sign-line"></div>
+          <div>${e(rec.despacho) || ''}</div>
+          <div class="constancia-sign-sub">Despacho remitente · ${e(rec.username) || ''}</div>
+        </div>
+
+        <div class="constancia-foot">
+          Documento generado automáticamente por el Sistema de Informe de Turno Fiscal — Generado el
+          ${e(fechaHoraLarga(new Date().toISOString()))}
+        </div>
+      </div>`;
+  }
+
+  function descargarConstanciaPdf() {
+    const rec = getConstanciaEnvio();
+    if (!rec) {
+      showToast('Aún no se ha registrado un envío para generar la constancia.', true);
+      return;
+    }
+    const holder = $('#constanciaPrint');
+    if (!holder) return;
+    holder.innerHTML = buildConstanciaHtml(rec);
+    document.body.classList.add('printing-constancia');
+    setTimeout(() => {
+      window.print();
+      setTimeout(() => document.body.classList.remove('printing-constancia'), 500);
+    }, 120);
+  }
+
+  async function descargarConstanciaDocx() {
+    const rec = getConstanciaEnvio();
+    if (!rec) {
+      showToast('Aún no se ha registrado un envío para generar la constancia.', true);
+      return;
+    }
+    if (!window.docx) {
+      showToast('No se pudo cargar el generador de Word.', true);
+      return;
+    }
+    try {
+      const { Document, Paragraph, TextRun, Table, TableRow, TableCell, WidthType, AlignmentType, Packer } = window.docx;
+      const filas = [
+        ['Despacho remitente', rec.despacho || '—'],
+        ['Usuario del sistema', rec.username || '—'],
+        ['Informe N°', `${rec.numeroInforme || 'S/N'}${rec.anio ? '-' + rec.anio : ''}${rec.siglas ? ' — ' + rec.siglas : ''}`],
+        ['Turno fiscal', rec.turno || '—'],
+        ['Casos / detenidos', `${rec.totalCasos} caso(s) · ${rec.totalDetenidos} detenido(s)`],
+        ['Destinataria', rec.destinataria || '—'],
+        ['Con copia a', rec.copiasA || '—'],
+        ['Fecha y hora de envío', fechaHoraLarga(rec.enviadoAt)],
+        ['Registro en el sistema', rec.registroId || 'No disponible']
+      ];
+      const cell = (txt, bold = false) => new TableCell({
+        children: [new Paragraph({ children: [new TextRun({ text: txt, bold, size: 20 })] })],
+        width: { size: bold ? 30 : 70, type: WidthType.PERCENTAGE }
+      });
+      const doc = new Document({
+        sections: [{
+          properties: { page: { margin: { top: 850, bottom: 850, left: 1000, right: 1000 } } },
+          children: [
+            new Paragraph({ alignment: AlignmentType.CENTER, children: [new TextRun({ text: 'MINISTERIO PÚBLICO', bold: true, size: 26 })] }),
+            new Paragraph({ alignment: AlignmentType.CENTER, children: [new TextRun({ text: 'Distrito Fiscal de Lima Centro', size: 20 })] }),
+            new Paragraph({ spacing: { before: 300, after: 300 }, alignment: AlignmentType.CENTER, children: [new TextRun({ text: 'CONSTANCIA DE ENVÍO DE INFORME DE TURNO FISCAL', bold: true, size: 26 })] }),
+            new Paragraph({ alignment: AlignmentType.CENTER, children: [new TextRun({ text: `Código de constancia: ${codigoConstancia(rec)}`, size: 20 })] }),
+            new Paragraph({
+              spacing: { before: 300, after: 200 },
+              children: [new TextRun({ text: 'Se deja constancia que el despacho que se indica a continuación remitió, por medio del Sistema de Informe de Turno Fiscal del Distrito Fiscal de Lima Centro, el informe detallado en el presente documento, con destino a la Presidencia de la Junta de Fiscales Superiores y copia a la Coordinación Distrital de las Fiscalías Especializadas en Flagrancia Delictiva.', size: 20 })]
+            }),
+            new Table({
+              width: { size: 100, type: WidthType.PERCENTAGE },
+              rows: filas.map(([k, v]) => new TableRow({ children: [cell(k, true), cell(v)] }))
+            }),
+            new Paragraph({
+              spacing: { before: 300 },
+              children: [new TextRun({ text: 'La presente constancia acredita únicamente el envío del informe a través del sistema. El contenido y los datos del informe son responsabilidad del despacho remitente.', italics: true, size: 18 })]
+            }),
+            new Paragraph({ spacing: { before: 900 }, alignment: AlignmentType.CENTER, children: [new TextRun({ text: '______________________________', size: 20 })] }),
+            new Paragraph({ alignment: AlignmentType.CENTER, children: [new TextRun({ text: rec.despacho || '', bold: true, size: 20 })] }),
+            new Paragraph({ alignment: AlignmentType.CENTER, children: [new TextRun({ text: `Despacho remitente · ${rec.username || ''}`, size: 18 })] }),
+            new Paragraph({ spacing: { before: 400 }, alignment: AlignmentType.CENTER, children: [new TextRun({ text: `Documento generado automáticamente — ${fechaHoraLarga(new Date().toISOString())}`, size: 16, color: '64748B' })] })
+          ]
+        }]
+      });
+      const blob = await Packer.toBlob(doc);
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = `Constancia_Envio_${rec.numeroInforme || 'informe'}_${codigoConstancia(rec)}.docx`;
+      a.click();
+      URL.revokeObjectURL(a.href);
+      showToast('Constancia de envío descargada en Word.');
+    } catch (err) {
+      showToast('No se pudo generar la constancia en Word: ' + err.message, true);
     }
   }
 
@@ -1371,9 +1592,11 @@
 
       if (isAdminRole(account)) {
         showAdminPanel();
+        hideConstanciaBanner();
       } else {
         showEditorWorkspace();
         syncInputsFromState();
+        showConstanciaBanner();
       }
     }, 450);
   }
@@ -1873,6 +2096,13 @@
 
     $('#btnSendToCoord').addEventListener('click', enviarAPresidencia);
 
+    // Botones de la constancia de envío (el banner se re-renderiza, por eso
+    // se usa delegación de eventos).
+    document.addEventListener('click', (e) => {
+      if (e.target.closest('#btnConstanciaPdf')) descargarConstanciaPdf();
+      if (e.target.closest('#btnConstanciaDocx')) descargarConstanciaDocx();
+    });
+
     const searchInp = $('#adminSearchInput');
     if (searchInp) {
       searchInp.addEventListener('input', renderAdminDashboard);
@@ -2293,6 +2523,7 @@
         }
         saveDraft();
         syncInputsFromState();
+        hideConstanciaBanner();
         showToast('Formulario limpiado.');
       }
     });
@@ -2364,6 +2595,7 @@
       if (sb) await sb.auth.signOut();
       currentAccount = null;
       currentDraftId = null;
+      hideConstanciaBanner();
       $('#loginPassword').value = '';
       $('#appShell').classList.add('hidden');
       $('#loginScreen').classList.remove('hidden');
