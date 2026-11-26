@@ -238,6 +238,16 @@
 
   function normalizeState(incoming) {
     const merged = { ...getDefaultState(), ...(incoming || {}) };
+    // "Tipo de turno" quedó reducido a Flagrancia delictiva / Otro: se
+    // descartan las marcas antiguas para que no reaparezcan en borradores
+    // guardados antes del cambio.
+    delete merged.tipo_corporativa;
+    delete merged.tipo_superior;
+    // El Asunto decía "DE FLAGRANCIA DELICTIVA"; los borradores viejos
+    // conservaban ese texto y deben salir como "EN FLAGRANCIA DELICTIVA".
+    if (typeof merged.tipo_turno_asunto === 'string') {
+      merged.tipo_turno_asunto = merged.tipo_turno_asunto.replace(/^\s*DE\s+FLAGRANCIA/i, 'EN FLAGRANCIA');
+    }
     merged.casosIngresados = Array.isArray(merged.casosIngresados) && merged.casosIngresados.length
       ? merged.casosIngresados.map(normalizeCaseRow)
       : [newCasoRow()];
@@ -256,7 +266,7 @@
       nombre_despacho_emisor: '',
       destinataria_nombre: 'SONIA ALBINA CHÁVEZ GIL',
       destinataria_cargo: 'Presidenta de la Junta de Fiscales Superiores del Distrito Fiscal de Lima Centro',
-      tipo_turno_asunto: 'DE FLAGRANCIA DELICTIVA',
+      tipo_turno_asunto: 'EN FLAGRANCIA DELICTIVA',
       referencia: 'OFICIO CIRCULAR N° 000137-2026-MP-FN-PJFSLIMA (06NOV2026)',
       fecha_inicio: '',
       hora_inicio: '08:00',
@@ -267,8 +277,6 @@
 
       nombre_despacho_turno: '',
       tipo_flagrancia: true,
-      tipo_corporativa: false,
-      tipo_superior: false,
       tipo_otro_check: false,
       otro_tipo_turno: '',
       mod_24h: true,
@@ -953,8 +961,8 @@
           <td>${escapeHtml(r.n_caso || '')}</td>
           <td>${escapeHtml(r.detenidos || '0')}</td>
           <td>${escapeHtml(r.agraviado || '0')}</td>
-          <td>${delitoHtml}</td>
           <td>${buildMedidasCellHtml(r)}</td>
+          <td>${delitoHtml}</td>
           <td>${resultadoHtml}</td>
         </tr>`;
       }).join('');
@@ -1009,7 +1017,7 @@
       <div class="doc-section-title">2. DATOS GENERALES DEL TURNO</div>
       <table class="doc-table">
         <tr><td class="label-col">Despacho de turno</td><td>${valOrPlaceholder(state.nombre_despacho_turno)}</td></tr>
-        <tr><td class="label-col">Tipo de turno</td><td>${chk(state.tipo_flagrancia)} Flagrancia delictiva &nbsp; ${chk(state.tipo_corporativa)} Fiscalía corporativa penal &nbsp; ${chk(state.tipo_superior)} Fiscalía superior &nbsp; ${chk(state.tipo_otro_check)} Otro: ${escapeHtml(state.otro_tipo_turno)}</td></tr>
+        <tr><td class="label-col">Tipo de turno</td><td>${chk(state.tipo_flagrancia)} Flagrancia delictiva &nbsp; ${chk(state.tipo_otro_check)} Otro: ${escapeHtml(state.otro_tipo_turno)}</td></tr>
         <tr><td class="label-col">Modalidad y duración</td><td>${chk(state.mod_24h)} 24 horas &nbsp; ${chk(state.mod_semanal)} Semanal &nbsp; ${chk(state.mod_otra_check)} Otra: ${escapeHtml(state.otra_modalidad)}</td></tr>
         <tr><td class="label-col">Inicio del turno</td><td>${valOrPlaceholder(state.fecha_inicio, 'dd/mm/aaaa')}, ${escapeHtml(state.hora_inicio)} horas</td></tr>
         <tr><td class="label-col">Culminación del turno</td><td>${valOrPlaceholder(state.fecha_fin, 'dd/mm/aaaa')}, ${escapeHtml(state.hora_fin)} horas</td></tr>
@@ -1031,7 +1039,7 @@
       <div class="doc-section-title">3. DETALLE DE CASOS</div>
       <div class="doc-subsection-title">3.1 Casos ingresados durante el turno</div>
       <table class="doc-table">
-        <thead><tr><th>N°</th><th>Carpeta fiscal / caso</th><th>Detenido(s) (N)</th><th>Agraviado (N)</th><th>Delito(s)</th><th>Medidas coercitivas</th><th>Resultado por delito</th></tr></thead>
+        <thead><tr><th>N°</th><th>Carpeta fiscal / caso</th><th>Detenido(s) (N)</th><th>Agraviado (N)</th><th>Medida coercitiva</th><th>Delito(s)</th><th>Resultado por delito</th></tr></thead>
         <tbody>
           ${renderCasosHtml()}
           <tr><td colspan="6" style="font-weight:700;text-align:right;">Total de detenidos del turno</td><td style="font-weight:700;text-align:center;">${escapeHtml(state.total_detenidos)}</td></tr>
@@ -1476,6 +1484,29 @@
     const body = xmlDoc.getElementsByTagNameNS(W_NS, 'body')[0];
     const tables = Array.from(body.children).filter((n) => n.localName === 'tbl');
 
+    // Tabla 2 (Datos generales): el Tipo de turno ahora solo ofrece
+    // "Flagrancia delictiva" y "Otro". La plantilla trae las cuatro opciones
+    // repartidas en dos líneas, así que se reescribe la celda en una sola.
+    if (tables[1]) {
+      const trTipo = Array.from(tables[1].children)
+        .filter((n) => n.localName === 'tr')
+        .find((tr) => {
+          const celdas = Array.from(tr.children).filter((n) => n.localName === 'tc');
+          return celdas[0] && getTextNodes(celdas[0]).some((t) => t.textContent.includes('Tipo de turno'));
+        });
+      const celdas = trTipo ? Array.from(trTipo.children).filter((n) => n.localName === 'tc') : [];
+      const valor = celdas[1];
+      const ts = valor ? getTextNodes(valor) : [];
+      if (ts.length) {
+        ts[0].textContent = `${chk(state.tipo_flagrancia)} Flagrancia delictiva    ${chk(state.tipo_otro_check)} Otro: ${state.otro_tipo_turno || ''}`;
+        ts[0].setAttribute('xml:space', 'preserve');
+        for (let j = 1; j < ts.length; j++) ts[j].parentNode.removeChild(ts[j]);
+        // Quita el salto de línea que separaba las dos filas de opciones.
+        Array.from(valor.getElementsByTagNameNS(W_NS, 'br'))
+          .forEach((br) => br.parentNode.removeChild(br));
+      }
+    }
+
     // Tabla 2.1 Personal de apoyo (index 2)
     populateDynamicTable(tables[2], state.personalApoyo, (r) => ({
       '{{nombre}}': r.nombre || '',
@@ -1487,25 +1518,39 @@
 
     // Tabla 3.1 (antes 4.1) Casos ingresados (index 5, keep last row "Total de detenidos del turno")
     if (tables[5]) {
-      // La fila de encabezado es la primera <w:tr> de la tabla (children[0]
-      // es <w:tblPr>), por eso se busca explícitamente.
+      // La plantilla original trae Delito | Diligencias | Resultado. El
+      // formulario y la vista previa usan Medida | Delito | Resultado, así
+      // que las columnas 5 y 6 intercambian encabezado y contenido. Los
+      // anchos se mantienen (la antigua columna "Diligencias" queda para el
+      // delito, que es el texto más largo, igual que en la vista previa).
+      const setCellText = (tc, texto) => {
+        const ts = getTextNodes(tc);
+        if (!ts.length) return;
+        ts[0].textContent = texto;
+        ts[0].setAttribute('xml:space', 'preserve');
+        for (let j = 1; j < ts.length; j++) ts[j].parentNode.removeChild(ts[j]);
+      };
+
       const headerRow = Array.from(tables[5].children).find((n) => n.localName === 'tr');
-      if (headerRow) {
-        replaceInNode(headerRow, {
-          'Detenido(s)': 'Detenido(s) (N)',
-          'Agraviado': 'Agraviado (N)',
-          'Diligencias realizadas': 'Medidas coercitivas',
-          'Delito': 'Delito(s)',
-          'Resultado y estado actual': 'Resultado por delito'
-        });
+      const headerCells = headerRow
+        ? Array.from(headerRow.children).filter((n) => n.localName === 'tc')
+        : [];
+      if (headerCells.length === 7) {
+        setCellText(headerCells[2], 'Detenido(s) (N)');
+        setCellText(headerCells[3], 'Agraviado (N)');
+        setCellText(headerCells[4], 'Medida coercitiva');
+        setCellText(headerCells[5], 'Delito(s)');
+        setCellText(headerCells[6], 'Resultado por delito');
       }
     }
+    // Las celdas se quedan en su sitio: la columna 5 (antes Delito) pasa a
+    // llevar la medida y la columna 6 (antes Diligencias) el delito.
     populateDynamicTable(tables[5], state.casosIngresados, (r) => ({
       '{{n_caso}}': r.n_caso || '',
       '{{detenidos}}': r.detenidos || '0',
       '{{agraviado}}': r.agraviado || '0',
-      '{{delito}}': buildDelitosCellText(r),
-      '{{diligencias}}': buildMedidasCellText(r),
+      '{{delito}}': buildMedidasCellText(r),
+      '{{diligencias}}': buildDelitosCellText(r),
       '{{resultado}}': buildResultadosCellText(r)
     }), 1);
 
@@ -1727,10 +1772,6 @@
       '{{otros_anexos}}': state.otros_anexos,
       '{{copias_a}}': state.copias_a,
 
-      '☐ Flagrancia delictiva': `${chk(state.tipo_flagrancia)} Flagrancia delictiva`,
-      '☐ Fiscalía corporativa penal': `${chk(state.tipo_corporativa)} Fiscalía corporativa penal`,
-      '☐ Fiscalía superior': `${chk(state.tipo_superior)} Fiscalía superior`,
-      '☐ Otro:': `${chk(state.tipo_otro_check)} Otro:`,
       '☐ 24 horas': `${chk(state.mod_24h)} 24 horas`,
       '☐ Semanal': `${chk(state.mod_semanal)} Semanal`,
       '☐ Otra:': `${chk(state.mod_otra_check)} Otra:`,
